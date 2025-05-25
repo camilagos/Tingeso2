@@ -1,4 +1,4 @@
-package com.tutorial.configservice;
+package com.example.config_service;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
