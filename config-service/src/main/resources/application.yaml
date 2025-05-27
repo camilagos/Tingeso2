@@ -7,8 +7,6 @@ spring:
         git:
           default-label: main
           uri: https://github.com/camilagos/Tingeso2.git
-          username: camilagos
-          password: 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
           search-paths: config-data
   application:
     name: config-service
