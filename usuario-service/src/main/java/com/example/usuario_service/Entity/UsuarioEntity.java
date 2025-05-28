@@ -1,13 +1,13 @@
 package com.example.usuario_service.Entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 import java.time.LocalDate;
 
 @Entity
@@ -26,4 +26,31 @@ public class UsuarioEntity {
     private LocalDate cumpleanos;
     private boolean admin;
 
+    public Long getId() {
+        return id;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public String getCorreo() {
+        return correo;
+    }
+
+    public String getRut() {
+        return rut;
+    }
+
+    public String getContrasena() {
+        return contrasena;
+    }
+
+    public LocalDate getCumpleanos() {
+        return cumpleanos;
+    }
+
+    public boolean isAdmin() {
+        return admin;
+    }
 }
