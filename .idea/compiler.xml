@@ -7,8 +7,21 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="eureka-service" />
-        <module name="gateway-service" />
         <module name="config-service" />
+        <module name="gateway-service" />
+      </profile>
+      <profile name="Annotation profile for tarifaEspecial-service" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/unknown/lombok-unknown.jar" />
+        </processorPath>
+        <module name="tarifa-service" />
+        <module name="reserva-service" />
+        <module name="descuentoGrupo-service" />
+        <module name="descuentoVisitas-service" />
+        <module name="tarifaEspecial-service" />
       </profile>
       <profile name="Annotation profile for usuario-service" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
@@ -18,13 +31,11 @@
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.30/lombok-1.18.30.jar" />
         </processorPath>
         <module name="usuario-service" />
-        <module name="tarifa-service" />
-        <module name="reserva-service" />
-        <module name="descuentoGrupo-service" />
-        <module name="descuentoVisitas-service" />
-        <module name="tarifaEspecial-service" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="pet-service" target="11" />
+    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
@@ -33,6 +44,7 @@
       <module name="descuentoVisitas-service" options="-parameters" />
       <module name="eureka-service" options="-parameters" />
       <module name="gateway-service" options="-parameters" />
+      <module name="pet-service" options="-parameters" />
       <module name="reserva-service" options="-parameters" />
       <module name="tarifa-service" options="-parameters" />
       <module name="tarifaEspecial-service" options="-parameters" />
