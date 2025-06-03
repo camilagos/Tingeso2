@@ -21,8 +21,13 @@ public class DescuentoGrupoService {
         return descuentoGrupoRepository.findAll();
     }
 
-    public DescuentoGrupoEntity updateDescuentoGrupo(DescuentoGrupoEntity descuentoGrupo) {
-        return descuentoGrupoRepository.save(descuentoGrupo);
+    public DescuentoGrupoEntity updateDescuentoGrupo(int id, DescuentoGrupoEntity descuentoGrupo) {
+        DescuentoGrupoEntity existingDescuentoGrupo = descuentoGrupoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("DescuentoGrupo not found with id: " + id));
+        existingDescuentoGrupo.setMinPersonas(descuentoGrupo.getMinPersonas());
+        existingDescuentoGrupo.setMaxPersonas(descuentoGrupo.getMaxPersonas());
+        existingDescuentoGrupo.setDescuento(descuentoGrupo.getDescuento());
+        return descuentoGrupoRepository.save(existingDescuentoGrupo);
     }
 
     public boolean deleteDescuentoGrupo(int id) throws Exception {
@@ -34,12 +39,12 @@ public class DescuentoGrupoService {
         }
     }
 
-    public DescuentoGrupoEntity buscarDescuentoGrupo(int cantPersonas) {
+    public int buscarDescuentoGrupo(int cantPersonas) {
         DescuentoGrupoEntity descuentoGrupo = descuentoGrupoRepository.findByMinPersonasLessThanEqualAndMaxPersonasGreaterThanEqual(cantPersonas, cantPersonas);
         if (descuentoGrupo != null) {
-            return descuentoGrupo;
+            return descuentoGrupo.getDescuento();
         } else {
-            return null;
+            return 0;
         }
     }
 }

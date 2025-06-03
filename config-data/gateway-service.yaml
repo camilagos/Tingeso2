@@ -33,3 +33,7 @@ spring:
           uri: lb://descuentoGrupo-service
           predicates:
             - Path=/descuentoGrupo/**
+        - id: descuentoVisitas-service
+          uri: lb://descuentoVisitas-service
+          predicates:
+              - Path=/descuentoVisitas/**

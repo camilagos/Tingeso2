@@ -30,9 +30,11 @@ public class DescuentoGrupoController {
         return ResponseEntity.ok(descuentosGrupo);
     }
 
-    @PutMapping()
-    public ResponseEntity<DescuentoGrupoEntity> update(@RequestBody DescuentoGrupoEntity descuentoGrupo) {
-        DescuentoGrupoEntity descuentoGrupoUpdated = descuentoGrupoService.updateDescuentoGrupo(descuentoGrupo);
+    @PutMapping("/{id}")
+    public ResponseEntity<DescuentoGrupoEntity> update(
+            @PathVariable("id") int id,
+            @RequestBody DescuentoGrupoEntity descuentoGrupo) {
+        DescuentoGrupoEntity descuentoGrupoUpdated = descuentoGrupoService.updateDescuentoGrupo(id, descuentoGrupo);
         return ResponseEntity.ok(descuentoGrupoUpdated);
     }
 
@@ -47,12 +49,8 @@ public class DescuentoGrupoController {
     }
 
     @GetMapping("/calcular/{cantPersonas}")
-    public ResponseEntity<DescuentoGrupoEntity> seleccionarDescuentoGrupo(@PathVariable("cantPersonas") int cantPersonas) {
-        DescuentoGrupoEntity descuentoGrupo = descuentoGrupoService.buscarDescuentoGrupo(cantPersonas);
-        if (descuentoGrupo != null) {
-            return ResponseEntity.ok(descuentoGrupo);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<Integer> calcularDescuento(@PathVariable("cantPersonas") int cantPersonas) {
+        int descuento = descuentoGrupoService.buscarDescuentoGrupo(cantPersonas);
+        return ResponseEntity.ok(descuento);
     }
 }

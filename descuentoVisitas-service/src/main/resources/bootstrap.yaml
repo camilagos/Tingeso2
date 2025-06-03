@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: descuentoVisitas-service
+  cloud:
+    config:
+      enabled: true
+      uri: http://localhost:8081
+  datasource:
+    url: jdbc:postgresql://localhost:5432/bdDescuentoVisitas
+    username: postgres
+    password: password
+  jpa:
+    hibernate:
+      ddl-auto: update
