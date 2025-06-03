@@ -23,8 +23,16 @@ public class DescuentoVisitasService {
         return descuentoVisitasRepository.findAll();
     }
 
-    public DescuentoVisitasEntity updateDescuentoVisitas(DescuentoVisitasEntity descuentoVisitas) {
-        return descuentoVisitasRepository.save(descuentoVisitas);
+    public DescuentoVisitasEntity updateDescuentoVisitas(int id, DescuentoVisitasEntity descuentoVisitas) {
+        DescuentoVisitasEntity existingDescuento = descuentoVisitasRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("DescuentoVisitas not found with id: " + id));
+
+        existingDescuento.setCategoria(descuentoVisitas.getCategoria());
+        existingDescuento.setMinVisitas(descuentoVisitas.getMinVisitas());
+        existingDescuento.setMaxVisitas(descuentoVisitas.getMaxVisitas());
+        existingDescuento.setDescuento(descuentoVisitas.getDescuento());
+
+        return descuentoVisitasRepository.save(existingDescuento);
     }
 
     public boolean deleteDescuentoVisitas(int id) throws Exception {

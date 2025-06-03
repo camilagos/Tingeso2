@@ -30,9 +30,11 @@ public class DescuentoVisitasController {
         return ResponseEntity.ok(descuentosVisitas);
     }
 
-    @PutMapping()
-    public ResponseEntity<DescuentoVisitasEntity> update(@RequestBody DescuentoVisitasEntity descuentoVisitas) {
-        DescuentoVisitasEntity descuentoVisitasUpdated = descuentoVisitasService.updateDescuentoVisitas(descuentoVisitas);
+    @PutMapping("/{id}")
+    public ResponseEntity<DescuentoVisitasEntity> update(
+            @PathVariable("id") int id,
+            @RequestBody DescuentoVisitasEntity descuentoVisitas) {
+        DescuentoVisitasEntity descuentoVisitasUpdated = descuentoVisitasService.updateDescuentoVisitas(id, descuentoVisitas);
         return ResponseEntity.ok(descuentoVisitasUpdated);
     }
 

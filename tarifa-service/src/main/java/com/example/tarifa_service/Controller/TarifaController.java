@@ -31,8 +31,10 @@ public class TarifaController {
     }
 
     @PutMapping()
-    public ResponseEntity<TarifaEntity> update(@RequestBody TarifaEntity tarifa) {
-        TarifaEntity tarifaUpdated = tarifaService.updateTarifa(tarifa);
+    public ResponseEntity<TarifaEntity> update(
+            @PathVariable("id") int id,
+            @RequestBody TarifaEntity tarifa) {
+        TarifaEntity tarifaUpdated = tarifaService.updateTarifa(id, tarifa);
         return ResponseEntity.ok(tarifaUpdated);
     }
 
@@ -47,8 +49,8 @@ public class TarifaController {
     }
 
     @GetMapping("/calcular/{tiempoVueltas}")
-    public ResponseEntity<TarifaEntity> seleccionarTarifa(@PathVariable("tiempoVueltas") int tiempoVueltas) {
-        TarifaEntity tarifa = tarifaService.buscarTarifa(tiempoVueltas);
+    public ResponseEntity<List<Integer>> seleccionarTarifa(@PathVariable("tiempoVueltas") int tiempoVueltas) {
+        List<Integer> tarifa = tarifaService.buscarTarifa(tiempoVueltas);
         if (tarifa != null) {
             return ResponseEntity.ok(tarifa);
         } else {

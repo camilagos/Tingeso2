@@ -22,8 +22,16 @@ public class TarifaService {
         return tarifaRepository.findAll();
     }
 
-    public TarifaEntity updateTarifa(TarifaEntity tarifa) {
-        return tarifaRepository.save(tarifa);
+    public TarifaEntity updateTarifa(int id, TarifaEntity tarifa) {
+        TarifaEntity existingTarifa = tarifaRepository.findById(id).orElse(null);
+        if (existingTarifa != null) {
+            existingTarifa.setTiempoVueltas(tarifa.getTiempoVueltas());
+            existingTarifa.setPrecio(tarifa.getPrecio());
+            existingTarifa.setDuracionReserva(tarifa.getDuracionReserva());
+            return tarifaRepository.save(existingTarifa);
+        } else {
+            return null; // or throw an exception
+        }
     }
 
     public boolean deleteTarifa(int id) throws Exception {
@@ -35,10 +43,10 @@ public class TarifaService {
         }
     }
 
-    public TarifaEntity buscarTarifa (int tiempoVueltas) {
+    public List<Integer> buscarTarifa (int tiempoVueltas) {
         TarifaEntity tarifa = tarifaRepository.findByTiempoVueltas(tiempoVueltas);
         if (tarifa != null) {
-            return tarifa;
+            return List.of(tarifa.getPrecio(), tarifa.getDuracionReserva());
         } else {
             return null;
         }
