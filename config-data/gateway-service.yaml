@@ -37,3 +37,7 @@ spring:
           uri: lb://descuentoVisitas-service
           predicates:
               - Path=/descuentoVisitas/**
+        - id: tarifa-service
+          uri: lb://tarifa-service
+          predicates:
+              - Path=/tarifa/**
