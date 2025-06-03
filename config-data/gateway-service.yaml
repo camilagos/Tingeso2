@@ -29,3 +29,7 @@ spring:
           uri: lb://usuario-service
           predicates:
             - Path=/usuario/**
+        - id: descuentoGrupo-service
+          uri: lb://descuentoGrupo-service
+          predicates:
+            - Path=/descuentoGrupo/**

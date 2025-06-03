@@ -3,7 +3,9 @@ package com.example.usuario_service.Service;
 import com.example.usuario_service.Entity.UsuarioEntity;
 import com.example.usuario_service.Repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class UsuarioService {
@@ -38,8 +40,8 @@ public class UsuarioService {
 
     public UsuarioEntity login(UsuarioEntity usuario) {
         UsuarioEntity user = usuarioRepository.findByCorreoAndContrasena(usuario.getCorreo(), usuario.getContrasena());
-        if (usuario != null) {
-            return usuario;
+        if (user != null) {
+            return user;
         } else {
             return null;
         }
