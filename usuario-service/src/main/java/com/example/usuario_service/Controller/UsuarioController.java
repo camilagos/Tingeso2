@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/usuario")
 @CrossOrigin("*")
@@ -45,4 +47,11 @@ public class UsuarioController {
     public ResponseEntity<UsuarioEntity> login(@RequestBody UsuarioEntity usuario) {
         return ResponseEntity.ok(usuarioService.login(usuario));
     }
+
+    @GetMapping("/ruts/{ruts}")
+    public ResponseEntity<List<UsuarioEntity>> getAllUsuariosporRuts(@PathVariable List<String> ruts) {
+        List<UsuarioEntity> usuarios = usuarioService.getAllUsuariosporRuts(ruts);
+        return ResponseEntity.ok(usuarios);
+    }
+
 }

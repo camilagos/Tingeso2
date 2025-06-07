@@ -18,7 +18,7 @@ public class TarifaEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-    private int TiempoVueltas;
+    private int tiempoVueltas;
     private int precio;
     private int duracionReserva;
 }

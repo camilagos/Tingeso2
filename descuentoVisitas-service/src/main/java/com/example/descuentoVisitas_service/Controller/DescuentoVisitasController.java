@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -48,14 +49,13 @@ public class DescuentoVisitasController {
         }
     }
 
-    /*
-    @GetMapping("/calcular/{cantVisitas}")
-    public ResponseEntity<DescuentoVisitasEntity> seleccionarDescuentoVisitas(@PathVariable("cantVisitas") int cantVisitas) {
-        DescuentoVisitasEntity descuentoVisitas = descuentoVisitasService.buscarDescuentoVisitas(cantVisitas);
-        if (descuentoVisitas != null) {
-            return ResponseEntity.ok(descuentoVisitas);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
-    }*/
+
+    @GetMapping("/calcular")
+    public ResponseEntity<Integer> calcularDescuentoVisitas(
+            @RequestParam("rut") String rut,
+            @RequestParam("fechaReserva") LocalDateTime fechaReserva) {
+        int descuento = descuentoVisitasService.buscarDescuentoVisitas(rut, fechaReserva);
+        return ResponseEntity.ok(descuento);
+    }
+
 }

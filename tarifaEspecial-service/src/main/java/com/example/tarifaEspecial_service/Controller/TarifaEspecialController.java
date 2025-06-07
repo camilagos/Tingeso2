@@ -32,8 +32,10 @@ public class TarifaEspecialController {
     }
 
     @PutMapping()
-    public ResponseEntity<TarifaEspecialEntity> update(@RequestBody TarifaEspecialEntity tarifaEspecial) {
-        TarifaEspecialEntity tarifaEspecialUpdated = tarifaEspecialService.updateTarifaEspecial(tarifaEspecial);
+    public ResponseEntity<TarifaEspecialEntity> update(
+            @PathVariable ("id") int id,
+            @RequestBody TarifaEspecialEntity tarifaEspecial) {
+        TarifaEspecialEntity tarifaEspecialUpdated = tarifaEspecialService.updateTarifaEspecial(id, tarifaEspecial);
         return ResponseEntity.ok(tarifaEspecialUpdated);
     }
 

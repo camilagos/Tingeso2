@@ -1,34 +1,13 @@
-package com.example.reserva_service.Entity;
+package com.example.descuentoVisitas_service.Model;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-import javax.persistence.*;
 import java.time.LocalDateTime;
 
-@Entity
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class ReservaEntity {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
+public class Reserva {
     private String rutUsuario;
     private String rutsUsuarios;
     private LocalDateTime fechaReserva;
     private int vueltasTiempo;
     private int cantPersonas;
-
-    @Column(name = "detalle_grupo", columnDefinition = "TEXT")
-    private String detalleGrupo;
-
-    public Long getId() {
-        return id;
-    }
 
     public String getRutUsuario() {
         return rutUsuario;
@@ -48,9 +27,5 @@ public class ReservaEntity {
 
     public int getCantPersonas() {
         return cantPersonas;
-    }
-
-    public String getDetalleGrupo() {
-        return detalleGrupo;
     }
 }

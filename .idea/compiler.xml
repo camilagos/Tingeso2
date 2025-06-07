@@ -10,27 +10,19 @@
         <module name="gateway-service" />
         <module name="config-service" />
       </profile>
-      <profile name="Annotation profile for tarifaEspecial-service" enabled="true">
-        <sourceOutputDir name="target/generated-sources/annotations" />
-        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
-        <outputRelativeToContentRoot value="true" />
-        <processorPath useClasspath="false">
-          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/unknown/lombok-unknown.jar" />
-        </processorPath>
-        <module name="reserva-service" />
-        <module name="tarifaEspecial-service" />
-      </profile>
-      <profile name="Annotation profile for usuario-service" enabled="true">
+      <profile name="Annotation profile for reserva-service" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="false">
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.30/lombok-1.18.30.jar" />
         </processorPath>
+        <module name="reserva-service" />
         <module name="usuario-service" />
         <module name="tarifa-service" />
         <module name="descuentoGrupo-service" />
         <module name="descuentoVisitas-service" />
+        <module name="tarifaEspecial-service" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>

@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: reserva-service
+  cloud:
+    config:
+      enabled: true
+      uri: http://localhost:8081
+  datasource:
+    url: jdbc:postgresql://localhost:5432/bdReserva
+    username: postgres
+    password: password
+  jpa:
+    hibernate:
+      ddl-auto: update
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: camila.lagos.l@usach.cl
+    password: vtpzsrdfkbitglgy
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true

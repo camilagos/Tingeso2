@@ -7,6 +7,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
+
 @Service
 public class UsuarioService {
 
@@ -45,5 +47,13 @@ public class UsuarioService {
         } else {
             return null;
         }
+    }
+
+    public List<UsuarioEntity> getAllUsuariosporRuts(List<String> ruts) {
+        List<UsuarioEntity> usuarios = usuarioRepository.findAllByRutIn(ruts);
+        if (usuarios.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontraron usuarios con los RUT proporcionados");
+        }
+        return usuarios;
     }
 }

@@ -30,7 +30,7 @@ public class TarifaController {
         return ResponseEntity.ok(tarifas);
     }
 
-    @PutMapping()
+    @PutMapping("/{id}")
     public ResponseEntity<TarifaEntity> update(
             @PathVariable("id") int id,
             @RequestBody TarifaEntity tarifa) {

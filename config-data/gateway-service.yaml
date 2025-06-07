@@ -41,3 +41,7 @@ spring:
           uri: lb://tarifa-service
           predicates:
               - Path=/tarifa/**
+        - id: reserva-service
+          uri: lb://reserva-service
+          predicates:
+              - Path=/reserva/**

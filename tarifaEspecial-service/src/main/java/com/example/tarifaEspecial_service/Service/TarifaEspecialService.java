@@ -23,8 +23,16 @@ public class TarifaEspecialService {
         return tarifaEspecialRepository.findAll();
     }
 
-    public TarifaEspecialEntity updateTarifaEspecial(TarifaEspecialEntity tarifaEspecial) {
-        return tarifaEspecialRepository.save(tarifaEspecial);
+    public TarifaEspecialEntity updateTarifaEspecial(int id, TarifaEspecialEntity tarifaEspecial) {
+        TarifaEspecialEntity existingTarifa = tarifaEspecialRepository.findById(id).orElse(null);
+        if (existingTarifa != null) {
+            existingTarifa.setFecha(tarifaEspecial.getFecha());
+            existingTarifa.setPorcentajeTarifa(tarifaEspecial.getPorcentajeTarifa());
+            existingTarifa.setDescripcion(tarifaEspecial.getDescripcion());
+            return tarifaEspecialRepository.save(existingTarifa);
+        } else {
+            return null; // or throw an exception
+        }
     }
 
     public boolean deleteTarifaEspecial(int id) throws Exception {
