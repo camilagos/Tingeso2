@@ -43,12 +43,13 @@ public class TarifaService {
         }
     }
 
-    public List<Integer> buscarTarifa (int tiempoVueltas) {
+    public int buscarTarifa (int tiempoVueltas) {
         TarifaEntity tarifa = tarifaRepository.findByTiempoVueltas(tiempoVueltas);
-        if (tarifa != null) {
-            return List.of(tarifa.getPrecio(), tarifa.getDuracionReserva());
-        } else {
-            return null;
-        }
+        return tarifa.getPrecio();
+    }
+
+    public int obtenerTiempoDeReserva(int tiempoVueltas) {
+        TarifaEntity tarifa = tarifaRepository.findByTiempoVueltas(tiempoVueltas);
+        return tarifa.getDuracionReserva();
     }
 }

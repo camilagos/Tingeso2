@@ -49,13 +49,15 @@ public class TarifaController {
     }
 
     @GetMapping("/calcular/{tiempoVueltas}")
-    public ResponseEntity<List<Integer>> seleccionarTarifa(@PathVariable("tiempoVueltas") int tiempoVueltas) {
-        List<Integer> tarifa = tarifaService.buscarTarifa(tiempoVueltas);
-        if (tarifa != null) {
-            return ResponseEntity.ok(tarifa);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<Integer> seleccionarTarifa(@PathVariable("tiempoVueltas") int tiempoVueltas) {
+        int tarifa = tarifaService.buscarTarifa(tiempoVueltas);
+        return ResponseEntity.ok(tarifa);
+    }
+
+    @GetMapping("/tiempo/{tiempoVueltas}")
+    public ResponseEntity<Integer> obtenerTiempoDeReserva(@PathVariable("tiempoVueltas") int tiempoVueltas) {
+        int tiempoReserva = tarifaService.obtenerTiempoDeReserva(tiempoVueltas);
+        return ResponseEntity.ok(tiempoReserva);
     }
 
 }

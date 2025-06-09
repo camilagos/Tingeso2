@@ -12,6 +12,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 
@@ -55,11 +56,30 @@ public class DescuentoVisitasService {
 
 
     public int buscarDescuentoVisitas(String rut, LocalDateTime fechaReserva) {
-        LocalDateTime fechaInicio = fechaReserva.withDayOfMonth(1).toLocalDate().atStartOfDay();
-        List<Reserva> reservas = restTemplate.exchange("http://reserva-service/reserva/entreFechas/"
-                        + "/" + fechaInicio + "/" + fechaReserva,
-                HttpMethod.GET, null, new ParameterizedTypeReference<List<Reserva>>() {
-                }).getBody();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+
+        String inicio = fechaReserva.withDayOfMonth(1).toLocalDate().atStartOfDay().format(formatter);
+        String fin = fechaReserva.format(formatter);
+
+        String url = "http://reserva-service/reserva/entreFechas/" + inicio + "/" + fin;
+
+        List<Reserva> reservas;
+        try {
+            reservas = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    null,
+                    new ParameterizedTypeReference<List<Reserva>>() {}).getBody();
+        } catch (Exception e) {
+            System.err.println("Error al consultar reservas: " + e.getMessage());
+            return 0; // Sin reservas, sin descuento
+        }
+
+        if (reservas == null || reservas.isEmpty()) {
+            System.out.println("No se encontraron reservas para el rango: " + inicio + " a " + fin);
+            return 0;
+        }
+
         int contador = 0;
 
         for (Reserva reserva : reservas) {
@@ -77,7 +97,16 @@ public class DescuentoVisitasService {
             }
         }
 
-        DescuentoVisitasEntity desc = descuentoVisitasRepository.findByMinVisitasLessThanEqualAndMaxVisitasGreaterThanEqual(contador, contador);
+        DescuentoVisitasEntity desc = descuentoVisitasRepository
+                .findByMinVisitasLessThanEqualAndMaxVisitasGreaterThanEqual(contador, contador);
+
+        if (desc == null) {
+            System.out.println("No se encontró descuento para " + contador + " visitas.");
+            return 0;
+        }
+
         return desc.getDescuento();
     }
+
+
 }

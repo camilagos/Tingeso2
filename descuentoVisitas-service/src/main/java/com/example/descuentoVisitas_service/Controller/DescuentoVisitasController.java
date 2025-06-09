@@ -3,6 +3,7 @@ package com.example.descuentoVisitas_service.Controller;
 import com.example.descuentoVisitas_service.Entity.DescuentoVisitasEntity;
 import com.example.descuentoVisitas_service.Service.DescuentoVisitasService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -50,10 +51,10 @@ public class DescuentoVisitasController {
     }
 
 
-    @GetMapping("/calcular")
+    @GetMapping("/calcular/{rut}/{fechaReserva}")
     public ResponseEntity<Integer> calcularDescuentoVisitas(
-            @RequestParam("rut") String rut,
-            @RequestParam("fechaReserva") LocalDateTime fechaReserva) {
+            @PathVariable String rut,
+            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaReserva) {
         int descuento = descuentoVisitasService.buscarDescuentoVisitas(rut, fechaReserva);
         return ResponseEntity.ok(descuento);
     }

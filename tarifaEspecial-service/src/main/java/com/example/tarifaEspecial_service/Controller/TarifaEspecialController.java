@@ -1,13 +1,16 @@
 package com.example.tarifaEspecial_service.Controller;
 
 import com.example.tarifaEspecial_service.Entity.TarifaEspecialEntity;
+import com.example.tarifaEspecial_service.Model.Usuario;
 import com.example.tarifaEspecial_service.Service.TarifaEspecialService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/tarifaEspecial")
@@ -54,5 +57,31 @@ public class TarifaEspecialController {
         LocalDate fecha = LocalDate.parse(fechaReserva);
         int precioFinal = tarifaEspecialService.aplicarTarifaEspecial(fecha, precioBase);
         return ResponseEntity.ok(precioFinal);
+    }
+
+    @PostMapping("/cumpleaneros")
+    public ResponseEntity<Set<Usuario>> getCumpleaneros(
+            @RequestBody List<Usuario> usuarios,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaReserva) {
+
+        Set<Usuario> cumpleaneros = tarifaEspecialService.obtenerCumpleaneros(usuarios, fechaReserva);
+
+        if (cumpleaneros.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(cumpleaneros);
+    }
+
+
+    @GetMapping("/cantCumplesPermitidos/{cantPersonas}")
+    public ResponseEntity<Integer> getCantidadCumplesPermitidos(@PathVariable("cantPersonas") int cantPersonas) {
+        int cantidadPermitida = tarifaEspecialService.cumpleanosPermitidos(cantPersonas);
+        return ResponseEntity.ok(cantidadPermitida);
+    }
+
+    @GetMapping("/finDeSemanaOFeriado/{fechaReserva}")
+    public ResponseEntity<Boolean> isFinDeSemanaOFeriado(@PathVariable("fechaReserva") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaReserva) {
+        boolean esFinDeSemanaOFeriado = tarifaEspecialService.isFinDeSemanaoFeriado(fechaReserva);
+        return ResponseEntity.ok(esFinDeSemanaOFeriado);
     }
 }

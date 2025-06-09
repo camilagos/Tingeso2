@@ -3,14 +3,15 @@ package com.example.reserva_service.Service;
 import com.example.reserva_service.Model.Usuario;
 import com.example.reserva_service.Entity.ReservaEntity;
 import com.example.reserva_service.Repository.ReservaRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lowagie.text.pdf.PdfWriter;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.ByteArrayResource;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -22,10 +23,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import com.lowagie.text.*;
@@ -65,6 +64,20 @@ public class ReservaService {
         }
     }
 
+    public Integer calcularPrecioBase(int vueltasTiempo) {
+        ResponseEntity<Integer> response = restTemplate.exchange(
+                "http://tarifa-service/tarifa/calcular/" + vueltasTiempo,
+                HttpMethod.GET, null, Integer.class);
+        return response.getBody();
+    }
+
+    public Integer aplicarTarifaEspecial(LocalDate fechaReserva, int precioBase) {
+        ResponseEntity<Integer> response = restTemplate.exchange(
+                "http://tarifaEspecial-service/tarifaEspecial/calcular/" + fechaReserva + "/" + precioBase,
+                HttpMethod.GET, null, Integer.class);
+        return response.getBody();
+    }
+
     public Integer obtenerDescuentoGrupo(int cantPersonas) {
         ResponseEntity<Integer> desc = restTemplate.exchange(
                 "http://descuentoGrupo-service/descuentoGrupo/calcular/" + cantPersonas,
@@ -72,27 +85,42 @@ public class ReservaService {
         return desc.getBody();
     }
 
-    public Map<Usuario, Integer> obtenerDescuentoFrecuencia(String rutUsuario, String rutUsuarios, LocalDateTime fechaReserva) {
+    public Map<Usuario, Integer> obtenerDescuentoFrecuencia(List<Usuario> usuarios, LocalDateTime fechaReserva) {
         Map<Usuario, Integer> descuentos = new java.util.HashMap<>();
 
-        List<String> allRuts = new ArrayList<>();
-        allRuts.add(rutUsuario);
-        List<String> extraRuts = Arrays.stream(rutUsuarios.split(","))
-                .map(String::trim)
-                .filter(r -> !r.isEmpty())
-                .collect(Collectors.toList());
-        allRuts.addAll(extraRuts);
-
-        ResponseEntity<List<Usuario>> participantes = restTemplate.exchange("http://usuario-service/usuario/ruts/" + String.join(",", allRuts),
-                HttpMethod.GET, null, new ParameterizedTypeReference<List<Usuario>>() {});
-        List<Usuario> usuarios = participantes.getBody();
+        DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+        String fechaFormateada = fechaReserva.format(formatter);
 
         for (Usuario usuario : usuarios) {
-             Integer desc = restTemplate.getForObject("http://descuentoVisitas-service/descuentoVisitas/calcular/" + usuario.getRut() + "/" + fechaReserva, Integer.class);
+             Integer desc = restTemplate.getForObject("http://descuentoVisitas-service/descuentoVisitas/calcular/" + usuario.getRut() + "/" + fechaFormateada, Integer.class);
 
              descuentos.put(usuario, desc);
         }
         return descuentos;
+    }
+
+    public Set<Usuario> obtenerCumpleaneros(List<Usuario> usuarios, LocalDate fechaReserva) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        HttpEntity<List<Usuario>> entity = new HttpEntity<>(usuarios, headers);
+
+        String url = "http://tarifaEspecial-service/tarifaEspecial/cumpleaneros?fechaReserva=" + fechaReserva.toString();
+
+        ResponseEntity<Set<Usuario>> response = restTemplate.exchange(
+                url,
+                HttpMethod.POST,
+                entity,
+                new ParameterizedTypeReference<Set<Usuario>>() {});
+
+        return response.getBody();
+    }
+
+    public Integer obtenerCumpleanerosPermitidos(int cantPersonas) {
+        ResponseEntity<Integer> response = restTemplate.exchange(
+                "http://tarifaEspecial-service/tarifaEspecial/cantCumplesPermitidos/" + cantPersonas,
+                HttpMethod.GET, null, Integer.class);
+        return response.getBody();
     }
 
     public byte[] generatePDF(ReservaEntity reservation, List<List<Object>> detail) {
@@ -100,10 +128,8 @@ public class ReservaService {
         Document document = new Document();
         PdfWriter.getInstance(document, out);
 
-        // Abrir el documento
         document.open();
 
-        // Agregar contenido al documento
         com.lowagie.text.Font font = new com.lowagie.text.Font(com.lowagie.text.Font.HELVETICA, 14, com.lowagie.text.Font.BOLD);
         document.add(new Paragraph("Comprobante de Reserva - KartingRM", font));
         document.add(new Paragraph(" "));
@@ -112,32 +138,59 @@ public class ReservaService {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
         String fechaFormateada = reservation.getFechaReserva().format(formatter);
         document.add(new Paragraph("Fecha y hora: " + fechaFormateada));
-        document.add(new Paragraph("N° de vueltas o Tiempo máximo: " + reservation.getVueltasTiempo()));
+        document.add(new Paragraph("Número de vueltas o tiempo máximo: " + reservation.getVueltasTiempo()));
         document.add(new Paragraph("Cantidad de personas: " + reservation.getCantPersonas()));
-        document.add(new Paragraph("Persona que hizo la reservación: " + obtenerNombreUsuario(reservation.getRutUsuario())));
+        document.add(new Paragraph("Reservado por: " + obtenerNombreUsuario(reservation.getRutUsuario())));
         document.add(new Paragraph(" "));
 
-        PdfPTable table = new PdfPTable(10);
+        PdfPTable table = new PdfPTable(8);
         table.setWidthPercentage(100);
-        Stream.of("Nombre", "Tarifa base", "Desc. Grupo", "Desc. Frec.", "Desc. Cumple.", "Desc. Especial",
-                        "Desc. Aplicado", "Subtotal", "IVA (19%)", "Total")
-                .forEach(h -> {
-                    PdfPCell cell = new PdfPCell(new Phrase(h));
-                    cell.setBackgroundColor(Color.LIGHT_GRAY);
-                    table.addCell(cell);
-                });
 
-        // Agregar los datos de los participantes
+        Stream.of(
+                "Nombre",
+                "Tarifa Base",
+                "Desc. Grupo",
+                "Desc. Frec./Cumple.",
+                "Desc. Aplicado",
+                "Subtotal",
+                "IVA (19%)",
+                "Total"
+        ).forEach(h -> {
+            PdfPCell cell = new PdfPCell(new Phrase(h));
+            cell.setBackgroundColor(Color.LIGHT_GRAY);
+            table.addCell(cell);
+        });
+
         for (List<Object> fila : detail) {
-            for (Object col : fila) {
-                table.addCell(String.valueOf(col));
+            String nombre = String.valueOf(fila.get(0));
+            String tarifaBase = String.valueOf(fila.get(1));
+            String descGrupo = String.valueOf(fila.get(2));
+            String descFrec = String.valueOf(fila.get(3));
+            String esCumple = String.valueOf(fila.get(4));
+            String descAplicado = String.valueOf(fila.get(5));
+            String subtotal = String.valueOf(fila.get(6));
+            String iva = String.valueOf(fila.get(7));
+            String total = String.valueOf(fila.get(8));
+
+            table.addCell(nombre);
+            table.addCell(tarifaBase);
+            table.addCell(descGrupo + "%");
+            if ("Sí".equals(esCumple)) {
+                table.addCell("50% (Cumpleaños)");
+            } else {
+                table.addCell(descFrec + "%");
             }
+            table.addCell(descAplicado + "%");
+            table.addCell(subtotal);
+            table.addCell(iva);
+            table.addCell(total);
         }
 
         document.add(table);
         document.close();
         return out.toByteArray();
     }
+
 
     public void sendVoucherByEmail(List<String> emails, byte[] pdf) {
         for (String email : emails) {
@@ -157,11 +210,18 @@ public class ReservaService {
         }
     }
 
+    public Boolean isHoliday(LocalDate date) {
+        ResponseEntity<Boolean> response = restTemplate.exchange(
+                "http://tarifaEspecial-service/tarifaEspecial/finDeSemanaOFeriado/" + date,
+                HttpMethod.GET, null, Boolean.class);
+        return response.getBody();
+    }
+
     private boolean isWithinWorkingHours(LocalDate date, LocalTime startTime, LocalTime endTime) {
         DayOfWeek day = date.getDayOfWeek();
 
         LocalTime apertura;
-        if (day == DayOfWeek.SATURDAY || day == DayOfWeek.SUNDAY /*|| isHoliday(date)*/) {
+        if (day == DayOfWeek.SATURDAY || day == DayOfWeek.SUNDAY || isHoliday(date)) {
             apertura = LocalTime.of(10, 0); // Fin de semana o feriado
         } else {
             apertura = LocalTime.of(14, 0); // Lunes a Viernes
@@ -170,4 +230,167 @@ public class ReservaService {
 
         return !startTime.isBefore(apertura) && !endTime.isAfter(cierre);
     }
+
+    public LocalDateTime calculateEndTime(LocalDateTime start, int vueltasTiempo) {
+        ResponseEntity<Integer> response = restTemplate.exchange(
+                "http://tarifa-service/tarifa/tiempo/" + vueltasTiempo,
+                HttpMethod.GET, null, Integer.class);
+        int duration = response.getBody();
+        return start.plusMinutes(duration);
+    }
+
+    public ReservaEntity saveReserva(ReservaEntity reservation) {
+        LocalDateTime newStart = reservation.getFechaReserva();
+        LocalDateTime newEnd = calculateEndTime(newStart, reservation.getVueltasTiempo());
+
+        // Verificar que el horario esté dentro del horario de atención
+        if (!isWithinWorkingHours(newStart.toLocalDate(), newStart.toLocalTime(), newEnd.toLocalTime())) {
+            throw new IllegalArgumentException("La reserva está fuera del horario de atención.");
+        }
+
+        // Verificar si hay suficientes karts
+        //List<KartEntity> kartsDisponibles = kartService.getKartsByAvailability(true);
+        //if (reservation.getNumberPeople() > kartsDisponibles.size()) {
+        //    throw new IllegalArgumentException("No hay suficientes karts disponibles para esta reserva.");
+        //}
+
+        List<String> allRuts = new ArrayList<>();
+        allRuts.add(reservation.getRutUsuario());
+        List<String> extraRuts = Arrays.stream(reservation.getRutsUsuarios().split(","))
+                .map(String::trim)
+                .filter(r -> !r.isEmpty())
+                .collect(Collectors.toList());
+        allRuts.addAll(extraRuts);
+
+        ResponseEntity<List<Usuario>> participantes = restTemplate.exchange("http://usuario-service/usuario/ruts/" + String.join(",", allRuts),
+                HttpMethod.GET, null, new ParameterizedTypeReference<List<Usuario>>() {});
+        List<Usuario> usuarios = participantes.getBody();
+
+        // Verificar si ya existe una reserva en el mismo horario
+        LocalDate date = newStart.toLocalDate();
+        List<ReservaEntity> reservations = reservaRepository.findByFechaReservaBetween(
+                date.atStartOfDay(),
+                date.atTime(23, 59, 59)
+        );
+
+        for (ReservaEntity r : reservations) {
+           LocalDateTime start = r.getFechaReserva();
+            LocalDateTime end = calculateEndTime(start, r.getVueltasTiempo());
+            if (newStart.isBefore(end) && start.isBefore(newEnd)) {
+                throw new IllegalArgumentException("Ya existe una reserva que se solapa en ese horario.");
+            }
+        }
+
+        // Determinar el precio base
+        int precioBase = calcularPrecioBase(reservation.getVueltasTiempo());
+        // Aplicar tarifa especial si corresponde
+        precioBase = aplicarTarifaEspecial(LocalDate.from(reservation.getFechaReserva()), precioBase);
+
+        int groupDiscount = obtenerDescuentoGrupo(reservation.getCantPersonas());
+        Map<Usuario, Integer> visitDiscounts = obtenerDescuentoFrecuencia(usuarios, reservation.getFechaReserva()
+        );
+        Set<Usuario> birthdayClients = obtenerCumpleaneros(usuarios, LocalDate.from(reservation.getFechaReserva()));
+        // Mostrar el listado de cumpleañeros
+        System.out.println("Cumpleañeros: " + birthdayClients.stream()
+                .map(Usuario::getNombre)
+                .collect(Collectors.joining(", ")));
+        int birthdayDiscountsAllowed = obtenerCumpleanerosPermitidos(reservation.getCantPersonas());
+        // Mostrar la cantidad de descuentos por cumpleaños permitidos
+        System.out.println("Descuentos por cumpleaños permitidos: " + birthdayDiscountsAllowed);
+
+        Set<String> birthdayRuts = birthdayClients.stream()
+                .map(Usuario::getRut)
+                .collect(Collectors.toSet());
+
+
+        List<List<Object>> detailParticipants = new ArrayList<>();
+        double totalPaymentWithTax = 0;
+        int birthdayApplied = 0;
+
+        // Determinar que descuentos aplicar
+        for (Usuario c : usuarios) {
+            double price = precioBase;
+
+            int visitDiscount = visitDiscounts != null ? visitDiscounts.getOrDefault(c, 0) : 0;
+            boolean birthday = birthdayRuts.contains(c.getRut()) && birthdayApplied < birthdayDiscountsAllowed;
+
+            int discountApplied = Math.max(groupDiscount, visitDiscount);
+
+            if (birthday) {
+                discountApplied = 50; // Prioridad al descuento por cumpleaños
+                birthdayApplied++;
+            }
+
+            // Aplicar descuento
+            price *= (1 - discountApplied / 100.0);
+
+            // Cálculo con IVA
+            double iva = price * 0.19;
+            double totalWithTax = price + iva;
+            totalPaymentWithTax += totalWithTax;
+
+            // Redondeo a 2 decimales
+            double baseRounded = Math.round(precioBase * 100.0) / 100.0;
+            double priceRounded = Math.round(price * 100.0) / 100.0;
+            double ivaRounded = Math.round(iva * 100.0) / 100.0;
+            double totalRounded = Math.round(totalWithTax * 100.0) / 100.0;
+
+            // Detalle del participante
+            detailParticipants.add(List.of(
+                    c.getNombre(),
+                    baseRounded,
+                    groupDiscount,
+                    visitDiscount,
+                    birthday ? "Sí" : "No",
+                    discountApplied,
+                    priceRounded,
+                    ivaRounded,
+                    totalRounded
+            ));
+        }
+
+        ReservaEntity reservationNew = new ReservaEntity(
+                reservation.getRutUsuario(),
+                reservation.getRutsUsuarios(),
+                reservation.getFechaReserva(),
+                reservation.getVueltasTiempo(),
+                reservation.getCantPersonas(),
+                null
+        );
+
+        // Hacer un json con los detalles de la reserva de cada participante
+        ObjectMapper mapper = new ObjectMapper();
+        String detailJson = null;
+        try {
+            detailJson = mapper.writeValueAsString(detailParticipants);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        reservationNew.setDetalleGrupo(detailJson);
+
+        reservationNew = reservaRepository.save(reservationNew);
+
+        // Generar el PDF
+        byte[] pdf = generatePDF(reservationNew, detailParticipants);
+
+        // Enviar el voucher por correo electrónico a los participantes
+        List<String> emails = usuarios.stream()
+                .map(Usuario::getCorreo)
+                .filter(email -> email != null && !email.isBlank())
+                .collect(Collectors.toList());
+
+        sendVoucherByEmail(emails, pdf);
+
+        return reservationNew;
+    }
+
+    public List<ReservaEntity> getAllReservas() {
+        return reservaRepository.findAll();
+    }
+
+    public ReservaEntity getReservaByFechaReserva(LocalDateTime fechaReserva) {
+        return reservaRepository.findByFechaReserva(fechaReserva);
+    }
+
+
 }

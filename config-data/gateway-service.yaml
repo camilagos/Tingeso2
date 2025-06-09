@@ -49,3 +49,15 @@ spring:
           uri: lb://reserva-service
           predicates:
               - Path=/reserva/**
+        - id: kart-service
+          uri: lb://kart-service
+          predicates:
+              - Path=/kart/**
+        - id: rack-service
+          uri: lb://rack-service
+          predicates:
+              - Path=/rack/**
+        - id: reporte-service
+          uri: lb://reporte-service
+          predicates:
+              - Path=/reporte/**

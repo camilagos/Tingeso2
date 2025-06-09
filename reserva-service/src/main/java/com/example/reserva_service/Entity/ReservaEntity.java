@@ -53,4 +53,41 @@ public class ReservaEntity {
     public String getDetalleGrupo() {
         return detalleGrupo;
     }
+
+    public ReservaEntity(String rutUsuario, String rutsUsuarios, LocalDateTime fechaReserva, int vueltasTiempo, int cantPersonas, String detalleGrupo) {
+        this.rutUsuario = rutUsuario;
+        this.rutsUsuarios = rutsUsuarios;
+        this.fechaReserva = fechaReserva;
+        this.vueltasTiempo = vueltasTiempo;
+        this.cantPersonas = cantPersonas;
+        this.detalleGrupo = detalleGrupo;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setRutUsuario(String rutUsuario) {
+        this.rutUsuario = rutUsuario;
+    }
+
+    public void setRutsUsuarios(String rutsUsuarios) {
+        this.rutsUsuarios = rutsUsuarios;
+    }
+
+    public void setFechaReserva(LocalDateTime fechaReserva) {
+        this.fechaReserva = fechaReserva;
+    }
+
+    public void setVueltasTiempo(int vueltasTiempo) {
+        this.vueltasTiempo = vueltasTiempo;
+    }
+
+    public void setCantPersonas(int cantPersonas) {
+        this.cantPersonas = cantPersonas;
+    }
+
+    public void setDetalleGrupo(String detalleGrupo) {
+        this.detalleGrupo = detalleGrupo;
+    }
 }
