@@ -9,6 +9,6 @@ import java.util.List;
 @Repository
 public interface UsuarioRepository extends JpaRepository<UsuarioEntity, Long> {
     UsuarioEntity findByRut(String rut);
-    UsuarioEntity findByCorreoAndContrasena(String correo, String contrasena);
+    UsuarioEntity findByCorreoAndContrasenaAndRut(String correo, String contrasena, String rut);
     List<UsuarioEntity> findAllByRutIn(List<String> ruts);
 }

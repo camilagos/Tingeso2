@@ -9,7 +9,9 @@ import ReportByPerson from './components/ReportByPerson';
 import Rack from './components/Rack';
 import Navbar from "./components/Navbar"
 import Home from './components/Home';
+import Tarifa from './components/tarifaManagement';
 import KartManagement from './components/KartManagement';
+import Descuentos from './components/descManagement';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 
 
@@ -28,6 +30,8 @@ function App() {
               <Route path="/reportByPerson" element={<ReportByPerson />} />
               <Route path="/rack" element={<Rack />} />
               <Route path="/karts" element={<KartManagement />} />
+              <Route path="/tarifas" element={<Tarifa />} />
+              <Route path="/descuentos" element={<Descuentos />} />
             </Routes>
           </div>
       </Router>

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import customerService from "../services/customer.service";
+import usuarioService from "../services/usuario.service";
 import {
   Box,
   TextField,
@@ -11,22 +11,29 @@ import LoginIcon from "@mui/icons-material/Login";
 
 const Login = () => {
   // Precarga desde registro
-  const [email, setEmail] = useState(localStorage.getItem("preLoginEmail") || "");
-  const [password, setPassword] = useState(localStorage.getItem("preLoginPassword") || "");
-  const navigate = useNavigate();
+  const [correo, setEmail] = useState(localStorage.getItem("preLoginEmail") || "");
+  const [contrasena, setPassword] = useState(localStorage.getItem("preLoginPassword") || "");
+  const [rut, setRut] = useState(localStorage.getItem("preLoginRut") || "");
 
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await customerService.login({ email, password });
-
+      const response = await usuarioService.login({ correo, contrasena, rut });
       if (response.status === 200) {
         // Limpia datos temporales de registro
         localStorage.removeItem("preLoginEmail");
         localStorage.removeItem("preLoginPassword");
+        localStorage.removeItem("preLoginRut");
 
         // Guarda los datos del usuario logueado
         localStorage.setItem("user", JSON.stringify(response.data));
+        //Mostrar lo guerdado en consola
+        console.log("Usuario logueado:", response.data);
+
+        if (!response.data || Object.keys(response.data).length === 0) {
+          console.warn("⚠️ La respuesta del backend está vacía.");
+        }
+
 
         alert("Inicio de sesión exitoso");
         window.location.href = "/";
@@ -52,8 +59,16 @@ const Login = () => {
           margin="normal"
           label="Correo electrónico"
           type="email"
-          value={email}
+          value={correo}
           onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+        <TextField
+          fullWidth
+          margin="normal"
+          label="RUT"
+          value={rut}
+          onChange={(e) => setRut(e.target.value)}
           required
         />
         <TextField
@@ -61,7 +76,7 @@ const Login = () => {
           margin="normal"
           label="Contraseña"
           type="password"
-          value={password}
+          value={contrasena}
           onChange={(e) => setPassword(e.target.value)}
           required
         />

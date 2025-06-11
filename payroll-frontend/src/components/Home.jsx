@@ -12,13 +12,15 @@ const Home = () => {
         - Sábados, Domingos y Feriados: 10:00 a 22:00 horas.
       </p>
       <p>
-        <strong>Tarifas y Duración de Reservas:</strong><br/>
-        - 10 vueltas o máximo 10 minutos en pista: $15.000<br/>
-        - 15 vueltas o máximo 15 minutos en pista: $20.000<br/>
-        - 20 vueltas o máximo 20 minutos en pista: $25.000
+        <strong>Tarifas y Duración de Reservas*</strong><br />
+        - 10 vueltas o máximo 10 minutos en pista: $15.000<br />
+        - 15 vueltas o máximo 15 minutos en pista: $20.000<br />
+        - 20 vueltas o máximo 20 minutos en pista: $25.000<br />
+        - Los fines de semana y días feriados se aplica un recargo del 15% sobre la tarifa base.
       </p>
+
       <p>
-        <strong>Descuentos Disponibles:</strong><br/>
+        <strong>Descuentos Disponibles*</strong><br/>
         <u>Por número de personas:</u><br/>
         - 3 a 5 personas: 10%<br/>
         - 6 a 10 personas: 20%<br/>
@@ -30,6 +32,12 @@ const Home = () => {
         <u>Promociones especiales:</u><br/>
         - 50% de descuento para clientes que celebran su cumpleaños el día de la reserva (aplicable en grupos de 3 a 5 personas para 1 cumpleañero, y en grupos de 6 a 10 personas para hasta 2 cumpleañeros).
       </p>
+
+      <p style={{ fontStyle: "italic", fontSize: "0.9rem", marginTop: "2rem" }}>
+        * Las tarifas y descuentos están sujetos a cambios.
+      </p>
+
+
       <p>
         La aplicación ha sido desarrollada utilizando{" "}
         <a href="https://spring.io/projects/spring-boot" target="_blank" rel="noreferrer">Spring Boot</a> para el backend,{" "}

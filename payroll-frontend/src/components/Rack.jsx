@@ -3,7 +3,8 @@ import { Calendar, dateFnsLocalizer } from "react-big-calendar";
 import { format, parse, startOfWeek, getDay } from "date-fns";
 import es from "date-fns/locale/es";
 import "react-big-calendar/lib/css/react-big-calendar.css";
-
+import rackService from "../services/rack.service";
+import reservaService from "../services/reserva.service";
 import {
   Box,
   Typography,
@@ -13,9 +14,7 @@ import {
   Button,
 } from "@mui/material";
 
-import reservationService from "../services/reservation.service";
-
-// Localización para calendario
+// Localización
 const locales = { es };
 const localizer = dateFnsLocalizer({
   format,
@@ -40,22 +39,22 @@ const Rack = () => {
   const [events, setEvents] = useState([]);
   const [eventoSeleccionado, setEventoSeleccionado] = useState(null);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const res = await reservationService.getAllReservationsByDuration();
-        const mapped = res.data.map((r) => ({
-          title: r.title,
-          start: new Date(r.start),
-          end: new Date(r.end),
-        }));
-        setEvents(mapped);
-      } catch (err) {
-        console.error(err);
-        alert("Error al cargar el rack semanal");
-      }
-    };
+  const fetchData = async () => {
+    try {
+      const res = await rackService.getAll();
+      const mapped = res.data.map((r) => ({
+        title: r.title,
+        start: new Date(r.start),
+        end: new Date(r.end),
+      }));
+      setEvents(mapped);
+    } catch (err) {
+      console.error(err);
+      alert("Error al cargar el rack semanal");
+    }
+  };
 
+  useEffect(() => {
     fetchData();
   }, []);
 
@@ -64,7 +63,6 @@ const Rack = () => {
     if (!clienteColorMap[cliente]) {
       clienteColorMap[cliente] = generateColorFromName(cliente);
     }
-
     return {
       style: {
         backgroundColor: clienteColorMap[cliente],
@@ -72,10 +70,10 @@ const Rack = () => {
         borderRadius: "8px",
         padding: "4px",
         fontWeight: 500,
+        fontSize: "0.9rem",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        fontSize: "0.9rem",
       },
     };
   };
@@ -85,33 +83,35 @@ const Rack = () => {
   };
 
   const cancelarReserva = async () => {
-    if (!eventoSeleccionado) return;
-  
-    const confirmacion = window.confirm("¿Seguro que quieres cancelar esta reserva?");
-    if (!confirmacion) return;
-  
-    try {
-      const date = eventoSeleccionado.start;
-      const formattedDate = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}T${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}:${date.getSeconds().toString().padStart(2, '0')}`;
-  
-      await reservationService.remove(formattedDate);
-  
-      alert("Reserva cancelada exitosamente");
-  
-      const res = await reservationService.getAllReservationsByDuration();
-      const mapped = res.data.map((r) => ({
-        title: r.title,
-        start: new Date(r.start),
-        end: new Date(r.end),
-      }));
-      setEvents(mapped);
-      setEventoSeleccionado(null);
-    } catch (error) {
-      console.error(error);
-      alert("Error al cancelar la reserva");
-    }
-  };
-  
+  if (!eventoSeleccionado) return;
+
+  const confirmar = window.confirm("¿Seguro que quieres cancelar esta reserva?");
+  if (!confirmar) return;
+
+  try {
+    const date = eventoSeleccionado.start;
+    const formattedDate = [
+      date.getFullYear(),
+      (date.getMonth() + 1).toString().padStart(2, '0'),
+      date.getDate().toString().padStart(2, '0')
+    ].join('-') + 'T' + [
+      date.getHours().toString().padStart(2, '0'),
+      date.getMinutes().toString().padStart(2, '0'),
+      date.getSeconds().toString().padStart(2, '0')
+    ].join(':');
+
+    await reservaService.removeByDate(encodeURIComponent(formattedDate));
+    alert("Reserva cancelada exitosamente");
+
+    await fetchData(); // Recarga eventos
+    setEventoSeleccionado(null);
+  } catch (error) {
+    console.error(error);
+    alert("Error al cancelar la reserva");
+  }
+};
+
+
   return (
     <Box sx={{ mt: 4, maxWidth: 1100, mx: "auto" }}>
       <Typography variant="h5" fontWeight="bold" gutterBottom>
@@ -152,17 +152,9 @@ const Rack = () => {
               Detalles de la Reserva
             </Typography>
             <Divider sx={{ my: 1 }} />
-            <Typography>
-              <strong>Cliente:</strong> {eventoSeleccionado.title}
-            </Typography>
-            <Typography>
-              <strong>Inicio:</strong>{" "}
-              {eventoSeleccionado.start.toLocaleString("es-CL")}
-            </Typography>
-            <Typography>
-              <strong>Término:</strong>{" "}
-              {eventoSeleccionado.end.toLocaleString("es-CL")}
-            </Typography>
+            <Typography><strong>Cliente:</strong> {eventoSeleccionado.title}</Typography>
+            <Typography><strong>Inicio:</strong> {eventoSeleccionado.start.toLocaleString("es-CL")}</Typography>
+            <Typography><strong>Término:</strong> {eventoSeleccionado.end.toLocaleString("es-CL")}</Typography>
             <Button
               variant="contained"
               color="error"

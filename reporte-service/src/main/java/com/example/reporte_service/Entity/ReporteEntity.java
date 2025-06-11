@@ -4,10 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.time.LocalDate;
 
 @Entity
@@ -23,6 +20,8 @@ public class ReporteEntity {
     private String tipo;
     private LocalDate fechaInicio;
     private LocalDate fechaFin;
+
+    @Column(name = "detalle", columnDefinition = "TEXT")
     private String detalle;
 
     public void setId(Long id) {

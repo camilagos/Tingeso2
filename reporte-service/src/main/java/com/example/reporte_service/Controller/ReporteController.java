@@ -11,13 +11,12 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/reporte")
-@CrossOrigin("*")
 public class ReporteController {
 
     @Autowired
     ReporteService reporteService;
 
-    @GetMapping("/porCantPersonas")
+    @GetMapping("/porTiempo")
     public ResponseEntity<Map<String, Map<String, Double>>> getIncomeFromLapsOrTime(
             @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
@@ -26,12 +25,12 @@ public class ReporteController {
         return ResponseEntity.ok(result);
     }
 
-    @GetMapping("/porTiempo")
-    public ResponseEntity<Map<String, Map<String, Double>>> getIncomeFromTime(
+    @GetMapping("/porCantPersonas")
+    public ResponseEntity<Map<String, Map<String, Double>>> getIncomePerPerson(
             @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
 
-        Map<String, Map<String, Double>> result = reporteService.incomeFromLapsOrTime(startDate, endDate);
+        Map<String, Map<String, Double>> result = reporteService.incomePerPerson(startDate, endDate);
         return ResponseEntity.ok(result);
     }
 }

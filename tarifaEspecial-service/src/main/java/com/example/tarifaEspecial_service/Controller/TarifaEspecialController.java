@@ -34,7 +34,7 @@ public class TarifaEspecialController {
         return ResponseEntity.ok(tarifasEspeciales);
     }
 
-    @PutMapping()
+    @PutMapping("/{id}")
     public ResponseEntity<TarifaEspecialEntity> update(
             @PathVariable ("id") int id,
             @RequestBody TarifaEspecialEntity tarifaEspecial) {
@@ -81,7 +81,7 @@ public class TarifaEspecialController {
 
     @GetMapping("/finDeSemanaOFeriado/{fechaReserva}")
     public ResponseEntity<Boolean> isFinDeSemanaOFeriado(@PathVariable("fechaReserva") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaReserva) {
-        boolean esFinDeSemanaOFeriado = tarifaEspecialService.isFinDeSemanaoFeriado(fechaReserva);
+        boolean esFinDeSemanaOFeriado = tarifaEspecialService.isFinDeSemanaOFeriado(fechaReserva);
         return ResponseEntity.ok(esFinDeSemanaOFeriado);
     }
 }

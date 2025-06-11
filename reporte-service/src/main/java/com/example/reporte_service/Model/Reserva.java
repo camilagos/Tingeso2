@@ -4,24 +4,25 @@ import java.time.LocalDateTime;
 
 public class Reserva {
 
+
     private LocalDateTime fechaReserva;
+    private int vueltasTiempo;
     private int cantPersonas;
-    private String vueltasTiempo;
-    private String detalle;
+    private String detalleGrupo;
 
     public LocalDateTime getFechaReserva() {
         return fechaReserva;
+    }
+
+    public int getVueltasTiempo() {
+        return vueltasTiempo;
     }
 
     public int getCantPersonas() {
         return cantPersonas;
     }
 
-    public String getVueltasTiempo() {
-        return vueltasTiempo;
-    }
-
-    public String getDetalle() {
-        return detalle;
+    public String getDetalleGrupo() {
+        return detalleGrupo;
     }
 }

@@ -7,7 +7,7 @@ console.log(payrollBackendServer)
 console.log(payrollBackendServerPort)
 
 export default axios.create({
-    baseURL: `http://${payrollBackendServer}:${payrollBackendServerPort}/api`,
+    baseURL: `http://${payrollBackendServer}:${payrollBackendServerPort}/`,
     headers: {
         'Content-Type': 'application/json'
     }

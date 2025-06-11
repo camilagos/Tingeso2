@@ -9,17 +9,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/rack")
-@CrossOrigin("*")
 public class RackController {
 
     @Autowired
     RackService rackService;
 
     @GetMapping("/")
-    public List<Reserva> getReservas() {
-        return rackService.obtenerReservas();
+    public List<Map<String, Object>> getReservas() {
+        return rackService.getAllReservationsByDuration();
     }
 }

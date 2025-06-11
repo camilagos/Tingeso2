@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Box, TextField, Button, Typography, Table, TableHead, TableRow, TableCell, TableBody, Paper } from "@mui/material";
-import reservationService from "../services/reservation.service";
+import reporteService from "../services/reporte.service";
 
 const ReportByLapsOrTime = () => {
   const [startDate, setStartDate] = useState("");
@@ -10,7 +10,7 @@ const ReportByLapsOrTime = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await reservationService.getIncomeFromLapsOrTime(startDate, endDate);
+      const res = await reporteService.getIncomeFromLapsOrTime(startDate, endDate);
       setData(res.data);
     } catch (error) {
       console.error(error);
@@ -42,7 +42,7 @@ const ReportByLapsOrTime = () => {
           onChange={(e) => setEndDate(e.target.value)}
           required
         />
-        <Button type="submit" variant="contained" color="primary">Consultar</Button>
+        <Button type="submit" variant="contained" color="primary">Generar Reporte</Button>
       </form>
 
       {data && (

@@ -54,7 +54,7 @@ public class ReporteService {
 
 
     public Map<String, Map<String, Double>> incomeFromLapsOrTime(LocalDate fechaInicio, LocalDate fechaFin) {
-        List<Reserva> reservations = obtenerReservasEntreFechas(fechaInicio.atStartOfDay(), fechaFin.atTime(23,59));
+        List<Reserva> reservations = obtenerReservasEntreFechas(fechaInicio.atStartOfDay(), fechaFin.atTime(23, 59));
 
         Map<String, Map<String, Double>> intermediate = new TreeMap<>();
         for (Reserva r : reservations) {
@@ -63,15 +63,13 @@ public class ReporteService {
 
             double totalReservation = 0;
             try {
-                List<List<Object>> detail = mapper.readValue(r.getDetalle(), new TypeReference<List<List<Object>>>() {
-                });
+                List<List<Object>> detail = mapper.readValue(r.getDetalleGrupo(), new TypeReference<List<List<Object>>>() {});
                 for (List<Object> row : detail) {
                     if (!row.isEmpty()) {
                         Object tarifa = row.get(row.size() - 1);
                         if (tarifa instanceof Number) {
-                            totalReservation += ((Number) tarifa).doubleValue();
+                            totalReservation += Math.round(((Number) tarifa).doubleValue());
                         }
-
                     }
                 }
             } catch (Exception e) {
@@ -83,7 +81,6 @@ public class ReporteService {
                     intermediate.get(lapsOrTimeReservation).getOrDefault(monthReservation, 0.0) + totalReservation);
         }
 
-        // Generar lista de todos los meses entre startDate y endDate
         Set<String> allMonths = new TreeSet<>();
         LocalDate current = fechaInicio.withDayOfMonth(1);
         while (!current.isAfter(fechaFin.withDayOfMonth(1))) {
@@ -94,7 +91,6 @@ public class ReporteService {
         Map<String, Map<String, Double>> result = new LinkedHashMap<>();
         Map<String, Double> totalPerMonth = new TreeMap<>();
 
-        // Agregar explícitamente todas las categorías de vueltas/tiempo
         List<String> allLapsCategories = List.of(
                 "10 vueltas o máx. 10 minutos",
                 "15 vueltas o máx. 15 minutos",
@@ -105,17 +101,17 @@ public class ReporteService {
             intermediate.computeIfAbsent(category, k -> new TreeMap<>());
         }
 
-
         for (String row : intermediate.keySet()) {
             Map<String, Double> rowData = new LinkedHashMap<>();
             double totalRow = 0;
             for (String month : allMonths) {
                 double value = intermediate.get(row).getOrDefault(month, 0.0);
-                rowData.put(getMonth(month), value);
-                totalPerMonth.put(getMonth(month), totalPerMonth.getOrDefault(getMonth(month), 0.0) + value);
-                totalRow += value;
+                double roundedValue = Math.round(value);
+                rowData.put(getMonth(month), roundedValue);
+                totalPerMonth.put(getMonth(month), totalPerMonth.getOrDefault(getMonth(month), 0.0) + roundedValue);
+                totalRow += roundedValue;
             }
-            rowData.put("Total", totalRow);
+            rowData.put("Total", (double) Math.round(totalRow));
             result.put(row, rowData);
         }
 
@@ -123,10 +119,11 @@ public class ReporteService {
         double total = 0;
         for (String nameMonth : allMonths.stream().map(this::getMonth).collect(Collectors.toList())) {
             double valorMes = totalPerMonth.getOrDefault(nameMonth, 0.0);
-            totalRows.put(nameMonth, valorMes);
-            total += valorMes;
+            double roundedValorMes = Math.round(valorMes);
+            totalRows.put(nameMonth, roundedValorMes);
+            total += roundedValorMes;
         }
-        totalRows.put("Total", total);
+        totalRows.put("Total", (double) Math.round(total));
         result.put("TOTAL", totalRows);
 
         try {
@@ -145,7 +142,7 @@ public class ReporteService {
     }
 
     public Map<String, Map<String, Double>> incomePerPerson(LocalDate fechaInicio, LocalDate fechaFin) {
-        List<Reserva> reservations = obtenerReservasEntreFechas(fechaInicio.atStartOfDay(), fechaFin.atTime(23,59));
+        List<Reserva> reservations = obtenerReservasEntreFechas(fechaInicio.atStartOfDay(), fechaFin.atTime(23, 59));
 
         Map<String, Map<String, Double>> intermediate = new TreeMap<>();
         for (Reserva r : reservations) {
@@ -159,13 +156,12 @@ public class ReporteService {
 
             double totalReservation = 0;
             try {
-                List<List<Object>> detail = mapper.readValue(r.getDetalle(), new TypeReference<List<List<Object>>>() {
-                });
+                List<List<Object>> detail = mapper.readValue(r.getDetalleGrupo(), new TypeReference<List<List<Object>>>() {});
                 for (List<Object> row : detail) {
                     if (!row.isEmpty()) {
                         Object tarifa = row.get(row.size() - 1);
                         if (tarifa instanceof Number) {
-                            totalReservation += ((Number) tarifa).doubleValue();
+                            totalReservation += Math.round(((Number) tarifa).doubleValue());
                         }
                     }
                 }
@@ -200,10 +196,12 @@ public class ReporteService {
             double totalRow = 0;
             for (String month : allMonths) {
                 double value = intermediate.getOrDefault(row, new TreeMap<>()).getOrDefault(month, 0.0);
-                rowData.put(getMonth(month), value);
-                totalRow += value;
+                double roundedValue = Math.round(value);
+                rowData.put(getMonth(month), roundedValue);
+                totalPerMonth.put(getMonth(month), totalPerMonth.getOrDefault(getMonth(month), 0.0) + roundedValue);
+                totalRow += roundedValue;
             }
-            rowData.put("Total", totalRow);
+            rowData.put("Total", (double) Math.round(totalRow));
             result.put(row, rowData);
         }
 
@@ -211,10 +209,11 @@ public class ReporteService {
         double total = 0;
         for (String nameMonth : allMonths.stream().map(this::getMonth).collect(Collectors.toList())) {
             double monthValue = totalPerMonth.getOrDefault(nameMonth, 0.0);
-            totalRows.put(nameMonth, monthValue);
-            total += monthValue;
+            double roundedMonthValue = Math.round(monthValue);
+            totalRows.put(nameMonth, roundedMonthValue);
+            total += roundedMonthValue;
         }
-        totalRows.put("Total", total);
+        totalRows.put("Total", (double) Math.round(total));
         result.put("TOTAL", totalRows);
 
         try {

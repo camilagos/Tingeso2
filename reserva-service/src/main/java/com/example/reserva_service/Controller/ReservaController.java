@@ -13,7 +13,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/reserva")
-@CrossOrigin("*")
 public class ReservaController {
 
     @Autowired
@@ -51,6 +50,14 @@ public class ReservaController {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.ok(reservas);
+    }
+
+    @DeleteMapping("/{fechaReserva}")
+    public ResponseEntity<Void> deleteReservationByDate(
+            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaReserva
+    ) throws Exception {
+        reservaService.deleteReservation(fechaReserva);
+        return ResponseEntity.noContent().build();
     }
 
 }

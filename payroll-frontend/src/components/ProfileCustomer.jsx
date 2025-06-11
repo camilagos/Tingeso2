@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {Box, Typography, Paper, Divider, Button} from "@mui/material";
-import customerService from "../services/customer.service";
+import usuarioService from "../services/usuario.service";
 
 const ProfileCustomer = () => {
   const [user, setUser] = useState(null);
@@ -22,7 +22,7 @@ const ProfileCustomer = () => {
     const confirmDelete = window.confirm("¿Estás seguro de que quieres eliminar tu cuenta? Esta acción no se puede deshacer.");
     if (confirmDelete) {
       try {
-        await customerService.remove(user.id);
+        await usuarioService.remove(user.id);
         localStorage.removeItem("user");
         alert("Tu cuenta ha sido eliminada.");
         window.location.href = "/";
@@ -43,11 +43,10 @@ const ProfileCustomer = () => {
         </Typography>
         <Divider sx={{ mb: 2 }} />
 
-        <Typography><strong>Nombre:</strong> {user.name}</Typography>
-        <Typography><strong>Email:</strong> {user.email}</Typography>
+        <Typography><strong>Nombre:</strong> {user.nombre}</Typography>
+        <Typography><strong>Email:</strong> {user.correo}</Typography>
         <Typography><strong>RUT:</strong> {user.rut}</Typography>
-        <Typography><strong>Teléfono:</strong> {user.phone}</Typography>
-        <Typography><strong>Fecha de nacimiento:</strong> {user.birthDate}</Typography>
+        <Typography><strong>Fecha de nacimiento:</strong> {user.cumpleanos}</Typography>
 
         <Divider sx={{ my: 2 }} />
         

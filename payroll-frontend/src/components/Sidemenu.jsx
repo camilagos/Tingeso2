@@ -16,7 +16,7 @@ import GroupIcon from "@mui/icons-material/Group";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import Typography from "@mui/material/Typography";
 import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
-
+import PercentIcon from "@mui/icons-material/Percent";
 
 
 
@@ -76,6 +76,18 @@ export default function Sidemenu({ open, toggleDrawer }) {
               <ListItemIcon><DirectionsCarIcon /></ListItemIcon>
               <ListItemText primary="Gestión de Karts" />
             </ListItemButton>
+
+            <ListItemButton onClick={() => navigate("/tarifas")}>
+              <ListItemIcon><BarChartIcon /></ListItemIcon>
+              <ListItemText primary="Gestión de Tarifas" />
+            </ListItemButton>
+
+            <ListItemButton onClick={() => navigate("/descuentos")}>
+              <ListItemIcon><PercentIcon /></ListItemIcon>
+              <ListItemText primary="Gestión de Descuentos" />
+            </ListItemButton>
+
+
           </>
         )}
       </List>

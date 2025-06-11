@@ -10,6 +10,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.MonthDay;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -48,31 +49,40 @@ public class TarifaEspecialService {
         }
     }
 
-    public boolean isFinDeSemanaoFeriado(LocalDate fecha) {
-        DayOfWeek dia = fecha.getDayOfWeek();
-        // Feriados fijos
-        List<MonthDay> feriadosFijos = List.of(
-                MonthDay.of(1, 1),   // Año Nuevo
-                MonthDay.of(5, 1),   // Día del Trabajador
-                MonthDay.of(9, 18),  // Independencia Chile
-                MonthDay.of(9, 19),  // Glorias del Ejército
-                MonthDay.of(12, 25)  // Navidad
-        );
+    public boolean isFinDeSemanaOFeriado(LocalDate fechaReserva) {
+        DayOfWeek dia = fechaReserva.getDayOfWeek();
+        boolean esFinde = dia == DayOfWeek.SATURDAY || dia == DayOfWeek.SUNDAY;
 
-        MonthDay diaActual = MonthDay.from(fecha);
+        boolean esFeriadoRegistrado = tarifaEspecialRepository.findByFecha(fechaReserva).isPresent();
 
-        return dia == DayOfWeek.SATURDAY || dia == DayOfWeek.SUNDAY || feriadosFijos.contains(diaActual);
+        return esFinde || esFeriadoRegistrado;
     }
 
+    private int aplicarPorcentaje(int precioBase, int porcentaje, boolean esRecargo) {
+        int ajuste = precioBase * porcentaje / 100;
+        return esRecargo ? precioBase + ajuste : precioBase - ajuste;
+    }
+
+
     public int aplicarTarifaEspecial(LocalDate fechaReserva, int precioBase) {
-        TarifaEspecialEntity tarifaEspecial = tarifaEspecialRepository.findByFecha(fechaReserva);
-        if (tarifaEspecial != null) {
-            return precioBase + (precioBase * tarifaEspecial.getPorcentajeTarifa() / 100);
-        } else {
-            return isFinDeSemanaoFeriado(fechaReserva)
-                    ? precioBase + (precioBase * 15 / 100)
-                    : precioBase;
+        TarifaEspecialEntity especialFecha = tarifaEspecialRepository.findByFecha(fechaReserva).orElse(null);
+
+        if (especialFecha != null && especialFecha.getPorcentajeTarifa() > 0) {
+            int porcentaje = especialFecha.getPorcentajeTarifa();
+            return aplicarPorcentaje(precioBase, porcentaje, especialFecha.isEsRecargo());
         }
+
+        DayOfWeek dia = fechaReserva.getDayOfWeek();
+        if (dia == DayOfWeek.SATURDAY || dia == DayOfWeek.SUNDAY) {
+            TarifaEspecialEntity tarifaFinde = tarifaEspecialRepository.findByDescripcionIgnoreCase("FIN DE SEMANA").orElse(null);
+
+            if (tarifaFinde != null && tarifaFinde.getPorcentajeTarifa() > 0) {
+                int porcentaje = tarifaFinde.getPorcentajeTarifa();
+                return aplicarPorcentaje(precioBase, porcentaje, tarifaFinde.isEsRecargo());
+            }
+        }
+
+        return precioBase;
     }
 
     public Set<Usuario> obtenerCumpleaneros(List<Usuario> usuarios, LocalDate fecha) {

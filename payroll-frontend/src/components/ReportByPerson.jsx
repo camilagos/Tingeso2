@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Box, TextField, Button, Typography, Table, TableHead, TableRow, TableCell, TableBody, Paper } from "@mui/material";
-import reservationService from "../services/reservation.service";
+import reporteService from "../services/reporte.service";
 
 const ReportByPerson = () => {
   const [startDate, setStartDate] = useState("");
@@ -10,7 +10,7 @@ const ReportByPerson = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await reservationService.getIncomePerPerson(startDate, endDate);
+      const res = await reporteService.getIncomePerPerson(startDate, endDate);
       setData(res.data);
     } catch (error) {
       console.error(error);

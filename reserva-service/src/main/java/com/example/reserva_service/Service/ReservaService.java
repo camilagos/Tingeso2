@@ -1,5 +1,6 @@
 package com.example.reserva_service.Service;
 
+import com.example.reserva_service.Model.Kart;
 import com.example.reserva_service.Model.Usuario;
 import com.example.reserva_service.Entity.ReservaEntity;
 import com.example.reserva_service.Repository.ReservaRepository;
@@ -205,7 +206,7 @@ public class ReservaService {
             } catch (MessagingException e) {
                 // Manejo de error por cada destinatario individual
                 System.err.println("Error al enviar correo a " + email);
-                e.printStackTrace(); // Puedes reemplazar por log
+                e.printStackTrace();
             }
         }
     }
@@ -239,6 +240,14 @@ public class ReservaService {
         return start.plusMinutes(duration);
     }
 
+    public Integer cantKartsDisponibles() {
+        ResponseEntity<List> response = restTemplate.exchange(
+                "http://kart-service/kart/disponible/" + true,
+                HttpMethod.GET, null, List.class);
+        return response.getBody().size();
+    }
+
+
     public ReservaEntity saveReserva(ReservaEntity reservation) {
         LocalDateTime newStart = reservation.getFechaReserva();
         LocalDateTime newEnd = calculateEndTime(newStart, reservation.getVueltasTiempo());
@@ -249,11 +258,12 @@ public class ReservaService {
         }
 
         // Verificar si hay suficientes karts
-        //List<KartEntity> kartsDisponibles = kartService.getKartsByAvailability(true);
-        //if (reservation.getNumberPeople() > kartsDisponibles.size()) {
-        //    throw new IllegalArgumentException("No hay suficientes karts disponibles para esta reserva.");
-        //}
+        int kartsDisponibles = cantKartsDisponibles();
+        if (reservation.getCantPersonas() > kartsDisponibles) {
+            throw new IllegalArgumentException("No hay suficientes karts disponibles para esta reserva.");
+        }
 
+        // Validar que todos los ruts esten registrados
         List<String> allRuts = new ArrayList<>();
         allRuts.add(reservation.getRutUsuario());
         List<String> extraRuts = Arrays.stream(reservation.getRutsUsuarios().split(","))
@@ -262,9 +272,17 @@ public class ReservaService {
                 .collect(Collectors.toList());
         allRuts.addAll(extraRuts);
 
-        ResponseEntity<List<Usuario>> participantes = restTemplate.exchange("http://usuario-service/usuario/ruts/" + String.join(",", allRuts),
+        // Llamada al microservicio de usuarios
+        ResponseEntity<List<Usuario>> participantesResponse = restTemplate.exchange(
+                "http://usuario-service/usuario/ruts/" + String.join(",", allRuts),
                 HttpMethod.GET, null, new ParameterizedTypeReference<List<Usuario>>() {});
-        List<Usuario> usuarios = participantes.getBody();
+
+        List<Usuario> usuarios = participantesResponse.getBody();
+
+        // Validar que todos los RUTs existan
+        if (usuarios == null || usuarios.size() != allRuts.size()) {
+            throw new IllegalArgumentException("Uno o más RUTs no están registrados.");
+        }
 
         // Verificar si ya existe una reserva en el mismo horario
         LocalDate date = newStart.toLocalDate();
@@ -287,16 +305,13 @@ public class ReservaService {
         precioBase = aplicarTarifaEspecial(LocalDate.from(reservation.getFechaReserva()), precioBase);
 
         int groupDiscount = obtenerDescuentoGrupo(reservation.getCantPersonas());
-        Map<Usuario, Integer> visitDiscounts = obtenerDescuentoFrecuencia(usuarios, reservation.getFechaReserva()
-        );
+        Map<Usuario, Integer> visitDiscounts = obtenerDescuentoFrecuencia(usuarios, reservation.getFechaReserva());
         Set<Usuario> birthdayClients = obtenerCumpleaneros(usuarios, LocalDate.from(reservation.getFechaReserva()));
-        // Mostrar el listado de cumpleañeros
-        System.out.println("Cumpleañeros: " + birthdayClients.stream()
-                .map(Usuario::getNombre)
-                .collect(Collectors.joining(", ")));
+        if (birthdayClients == null) {
+            birthdayClients = Collections.emptySet();
+        }
+
         int birthdayDiscountsAllowed = obtenerCumpleanerosPermitidos(reservation.getCantPersonas());
-        // Mostrar la cantidad de descuentos por cumpleaños permitidos
-        System.out.println("Descuentos por cumpleaños permitidos: " + birthdayDiscountsAllowed);
 
         Set<String> birthdayRuts = birthdayClients.stream()
                 .map(Usuario::getRut)
@@ -329,11 +344,12 @@ public class ReservaService {
             double totalWithTax = price + iva;
             totalPaymentWithTax += totalWithTax;
 
-            // Redondeo a 2 decimales
-            double baseRounded = Math.round(precioBase * 100.0) / 100.0;
-            double priceRounded = Math.round(price * 100.0) / 100.0;
-            double ivaRounded = Math.round(iva * 100.0) / 100.0;
-            double totalRounded = Math.round(totalWithTax * 100.0) / 100.0;
+            // Redondear valores a enteros
+            long baseRounded = Math.round(precioBase);
+            long priceRounded = Math.round(price);
+            long ivaRounded = Math.round(iva);
+            long totalRounded = Math.round(totalWithTax);
+
 
             // Detalle del participante
             detailParticipants.add(List.of(
@@ -392,5 +408,18 @@ public class ReservaService {
         return reservaRepository.findByFechaReserva(fechaReserva);
     }
 
+    public boolean deleteReservation(LocalDateTime date) throws Exception {
+        try {
+            ReservaEntity reservation = reservaRepository.findByFechaReserva(date);
+            if (reservation == null) {
+                throw new Exception("No se encontró la reserva con la fecha proporcionada.");
+            }
+            Long id = reservation.getId();
+            reservaRepository.deleteById(id);
+            return true;
+        } catch (Exception e) {
+            throw new Exception(e.getMessage());
+        }
+    }
 
 }

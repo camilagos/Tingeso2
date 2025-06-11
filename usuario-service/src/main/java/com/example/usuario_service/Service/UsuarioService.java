@@ -41,12 +41,11 @@ public class UsuarioService {
     }
 
     public UsuarioEntity login(UsuarioEntity usuario) {
-        UsuarioEntity user = usuarioRepository.findByCorreoAndContrasena(usuario.getCorreo(), usuario.getContrasena());
-        if (user != null) {
-            return user;
-        } else {
-            return null;
+        UsuarioEntity user = usuarioRepository.findByCorreoAndContrasenaAndRut(usuario.getCorreo(), usuario.getContrasena(), usuario.getRut());
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Correo, rut o contraseña incorrectos");
         }
+        return user;
     }
 
     public List<UsuarioEntity> getAllUsuariosporRuts(List<String> ruts) {

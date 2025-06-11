@@ -22,4 +22,5 @@ public class TarifaEspecialEntity {
     private LocalDate fecha;
     private int porcentajeTarifa;
     private String descripcion;
+    private boolean esRecargo;
 }

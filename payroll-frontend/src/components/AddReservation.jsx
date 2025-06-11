@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import reservationService from "../services/reservation.service";
+import reservaService from "../services/reserva.service";
+import tarifaService from "../services/tarifa.service";
 import {
   Box,
   TextField,
@@ -15,46 +16,48 @@ const AddReservation = () => {
   const isAdmin = user?.admin || false;
 
   const [form, setForm] = useState({
-    rutUser: !isAdmin ? user?.rut || "" : "",
-    rutsUsers: "",
-    reservationDate: "",
-    lapsOrTime: 10,
-    numberPeople: 1,
+    rutUsuario: !isAdmin ? user?.rut || "" : "",
+    rutsUsuarios: "",
+    fechaReserva: "",
+    vueltasTiempo: "",
+    cantPersonas: 1,
   });
-  
 
-  const [customPrice, setCustomPrice] = useState(null);
-  const [specialDiscount, setSpecialDiscount] = useState(null);
-
+  const [tarifas, setTarifas] = useState([]);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchTarifas = async () => {
+      try {
+        const res = await tarifaService.getAll();
+        setTarifas(res.data || []);
+      } catch (err) {
+        console.error("Error al cargar tarifas:", err);
+        alert("No se pudieron cargar las opciones de tarifas");
+      }
+    };
+
+    fetchTarifas();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({
       ...prev,
-      [name]: name === "numberPeople" || name === "lapsOrTime" ? parseInt(value) : value,
+      [name]: name === "cantPersonas" || name === "vueltasTiempo" ? parseInt(value) : value,
     }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await reservationService.create(
-        form,
-        isAdmin,
-        isAdmin ? customPrice : null,
-        isAdmin ? specialDiscount : null
-      );
+      await reservaService.save(form);
       alert("Reserva realizada con éxito");
       navigate("/");
     } catch (err) {
-        console.error("Error al crear la reserva:", err);
-      
-        const message =
-          "No se pudo realizar la reserva. Verifica los datos ingresados o intenta con otro horario.";
-      
-        alert(message);
-      }      
+      console.error("Error al crear la reserva:", err);
+      alert("No se pudo realizar la reserva. Verifica los datos ingresados o intenta con otro horario.");
+    }
   };
 
   return (
@@ -66,18 +69,18 @@ const AddReservation = () => {
         <TextField
           fullWidth
           margin="normal"
-          name="rutUser"
+          name="rutUsuario"
           label="RUT del Usuario Principal"
-          value={form.rutUser}
+          value={form.rutUsuario}
           onChange={handleChange}
           required
         />
         <TextField
           fullWidth
           margin="normal"
-          name="rutsUsers"
+          name="rutsUsuarios"
           label="RUTs Adicionales (separados por coma)"
-          value={form.rutsUsers}
+          value={form.rutsUsuarios}
           onChange={handleChange}
           helperText="Los RUTs ingresados deben corresponder a usuarios registrados en el sistema."
         />
@@ -85,61 +88,41 @@ const AddReservation = () => {
           fullWidth
           margin="normal"
           type="datetime-local"
-          name="reservationDate"
+          name="fechaReserva"
           label="Fecha y Hora"
           InputLabelProps={{ shrink: true }}
-          value={form.reservationDate}
+          value={form.fechaReserva}
           onChange={handleChange}
           required
           helperText="Las reservas deben realizarse dentro del horario de atención: lunes a viernes de 14:00 a 22:00 h, fines de semana y feriados de 10:00 a 22:00 h."
-
         />
         <TextField
           fullWidth
           select
           margin="normal"
-          name="lapsOrTime"
+          name="vueltasTiempo"
           label="Vueltas o Tiempo (min)"
-          value={form.lapsOrTime}
+          value={form.vueltasTiempo}
           onChange={handleChange}
+          required
         >
-          <MenuItem value={10}>10 vueltas o 10 min</MenuItem>
-          <MenuItem value={15}>15 vueltas o 15 min</MenuItem>
-          <MenuItem value={20}>20 vueltas o 20 min</MenuItem>
+          {tarifas.map((t) => (
+            <MenuItem key={t.tiempoVueltas} value={t.tiempoVueltas}>
+              {t.tiempoVueltas} vueltas o {t.tiempoVueltas} min - ${t.precio}
+            </MenuItem>
+          ))}
         </TextField>
         <TextField
           fullWidth
           margin="normal"
           type="number"
-          name="numberPeople"
+          name="cantPersonas"
           label="Número de Personas"
-          value={form.numberPeople}
+          value={form.cantPersonas}
           onChange={handleChange}
           inputProps={{ min: 1, max: 15 }}
           required
         />
-
-        {isAdmin && (
-          <>
-            <TextField
-              fullWidth
-              margin="normal"
-              label="Precio Personalizado (opcional)"
-              type="number"
-              value={customPrice || ""}
-              onChange={(e) => setCustomPrice(parseFloat(e.target.value))}
-            />
-            <TextField
-              fullWidth
-              margin="normal"
-              label="Descuento Especial % (opcional)"
-              type="number"
-              value={specialDiscount || ""}
-              inputProps={{ min: 0, max: 100 }}
-              onChange={(e) => setSpecialDiscount(parseFloat(e.target.value))}
-            />
-          </>
-        )}
 
         <Button
           type="submit"
