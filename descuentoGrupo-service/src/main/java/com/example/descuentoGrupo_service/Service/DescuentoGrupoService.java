@@ -39,12 +39,11 @@ public class DescuentoGrupoService {
         }
     }
 
-    public int buscarDescuentoGrupo(int cantPersonas) {
+    public Object[] buscarDescuentoGrupo(int cantPersonas) {
         DescuentoGrupoEntity descuentoGrupo = descuentoGrupoRepository.findByMinPersonasLessThanEqualAndMaxPersonasGreaterThanEqual(cantPersonas, cantPersonas);
-        if (descuentoGrupo != null) {
-            return descuentoGrupo.getDescuento();
-        } else {
-            return 0;
-        }
+        int descuento = descuentoGrupo.getDescuento();
+        int min = descuentoGrupo.getMinPersonas();
+        int max = descuentoGrupo.getMaxPersonas();
+        return new Object[]{descuento, min, max};
     }
 }

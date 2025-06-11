@@ -49,8 +49,8 @@ public class DescuentoGrupoController {
     }
 
     @GetMapping("/calcular/{cantPersonas}")
-    public ResponseEntity<Integer> calcularDescuento(@PathVariable("cantPersonas") int cantPersonas) {
-        int descuento = descuentoGrupoService.buscarDescuentoGrupo(cantPersonas);
+    public ResponseEntity<Object[]> calcularDescuento(@PathVariable("cantPersonas") int cantPersonas) {
+        Object[] descuento = descuentoGrupoService.buscarDescuentoGrupo(cantPersonas);
         return ResponseEntity.ok(descuento);
     }
 }

@@ -22,6 +22,8 @@ public class ReservaEntity {
     private LocalDateTime fechaReserva;
     private int vueltasTiempo;
     private int cantPersonas;
+    private int duracion;
+    private String rangoPersonas;
 
     @Column(name = "detalle_grupo", columnDefinition = "TEXT")
     private String detalleGrupo;
@@ -50,16 +52,26 @@ public class ReservaEntity {
         return cantPersonas;
     }
 
+    public int getDuracion() {
+        return duracion;
+    }
+
+    public String getRangoPersonas() {
+        return rangoPersonas;
+    }
+
     public String getDetalleGrupo() {
         return detalleGrupo;
     }
 
-    public ReservaEntity(String rutUsuario, String rutsUsuarios, LocalDateTime fechaReserva, int vueltasTiempo, int cantPersonas, String detalleGrupo) {
+    public ReservaEntity(String rutUsuario, String rutsUsuarios, LocalDateTime fechaReserva, int vueltasTiempo, int cantPersonas, int duracion, String rangoPersonas, String detalleGrupo) {
         this.rutUsuario = rutUsuario;
         this.rutsUsuarios = rutsUsuarios;
         this.fechaReserva = fechaReserva;
         this.vueltasTiempo = vueltasTiempo;
         this.cantPersonas = cantPersonas;
+        this.duracion = duracion;
+        this.rangoPersonas = rangoPersonas;
         this.detalleGrupo = detalleGrupo;
     }
 
@@ -85,6 +97,14 @@ public class ReservaEntity {
 
     public void setCantPersonas(int cantPersonas) {
         this.cantPersonas = cantPersonas;
+    }
+
+    public void setDuracion(int duracion) {
+        this.duracion = duracion;
+    }
+
+    public void setRangoPersonas(String rangoPersonas) {
+        this.rangoPersonas = rangoPersonas;
     }
 
     public void setDetalleGrupo(String detalleGrupo) {

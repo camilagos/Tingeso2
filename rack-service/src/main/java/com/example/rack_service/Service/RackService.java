@@ -37,18 +37,7 @@ public class RackService {
         for (Reserva r : reservations) {
             LocalDateTime start = r.getFechaReserva();
             int laps = r.getVueltasTiempo();
-            ResponseEntity<Integer> response = restTemplate.exchange(
-                    "http://tarifa-service/tarifa/tiempo/" + laps,
-                    HttpMethod.GET,
-                    null,
-                    Integer.class
-            );
-
-            if (response.getBody() == null) {
-                throw new IllegalStateException("No se pudo obtener el tiempo de reserva: respuesta vacía");
-            }
-
-            int duration = response.getBody();
+            int duration = r.getDuracion();
 
             LocalDateTime end = start.plusMinutes(duration);
 

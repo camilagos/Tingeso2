@@ -8,6 +8,7 @@ public class Reserva {
     private LocalDateTime fechaReserva;
     private int vueltasTiempo;
     private int cantPersonas;
+    private int duracion;
     private String detalleGrupo;
 
 
@@ -23,6 +24,8 @@ public class Reserva {
     public int getCantPersonas() {
         return cantPersonas;
     }
+
+    public int getDuracion() { return duracion; }
 
     public String getDetalleGrupo() {
         return detalleGrupo;

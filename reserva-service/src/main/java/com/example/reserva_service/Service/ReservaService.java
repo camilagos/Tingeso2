@@ -79,12 +79,15 @@ public class ReservaService {
         return response.getBody();
     }
 
-    public Integer obtenerDescuentoGrupo(int cantPersonas) {
-        ResponseEntity<Integer> desc = restTemplate.exchange(
+    public List<Object> obtenerDescuentoGrupo(int cantPersonas) {
+        ResponseEntity<List<Object>> desc = restTemplate.exchange(
                 "http://descuentoGrupo-service/descuentoGrupo/calcular/" + cantPersonas,
-                HttpMethod.GET, null, Integer.class);
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<List<Object>>() {});
         return desc.getBody();
     }
+
 
     public Map<Usuario, Integer> obtenerDescuentoFrecuencia(List<Usuario> usuarios, LocalDateTime fechaReserva) {
         Map<Usuario, Integer> descuentos = new java.util.HashMap<>();
@@ -247,6 +250,20 @@ public class ReservaService {
         return response.getBody().size();
     }
 
+    public Integer duracionReserva(int vueltasTiempo) {
+        ResponseEntity<Integer> response = restTemplate.exchange(
+                "http://tarifa-service/tarifa/tiempo/" + vueltasTiempo,
+                HttpMethod.GET,
+                null,
+                Integer.class
+        );
+
+        if (response.getBody() == null) {
+            throw new IllegalStateException("No se pudo obtener el tiempo de reserva: respuesta vacía");
+        }
+
+        return response.getBody();
+    }
 
     public ReservaEntity saveReserva(ReservaEntity reservation) {
         LocalDateTime newStart = reservation.getFechaReserva();
@@ -291,9 +308,11 @@ public class ReservaService {
                 date.atTime(23, 59, 59)
         );
 
+        int duracion = duracionReserva(reservation.getVueltasTiempo());
+
         for (ReservaEntity r : reservations) {
            LocalDateTime start = r.getFechaReserva();
-            LocalDateTime end = calculateEndTime(start, r.getVueltasTiempo());
+            LocalDateTime end = calculateEndTime(start, r.getDuracion());
             if (newStart.isBefore(end) && start.isBefore(newEnd)) {
                 throw new IllegalArgumentException("Ya existe una reserva que se solapa en ese horario.");
             }
@@ -304,7 +323,12 @@ public class ReservaService {
         // Aplicar tarifa especial si corresponde
         precioBase = aplicarTarifaEspecial(LocalDate.from(reservation.getFechaReserva()), precioBase);
 
-        int groupDiscount = obtenerDescuentoGrupo(reservation.getCantPersonas());
+        List<Object> descGrupo = obtenerDescuentoGrupo(reservation.getCantPersonas());
+
+        int groupDiscount = (int) descGrupo.get(0);
+        String rangoPersonas = descGrupo.get(1) + "-" + descGrupo.get(2) + " personas";
+
+
         Map<Usuario, Integer> visitDiscounts = obtenerDescuentoFrecuencia(usuarios, reservation.getFechaReserva());
         Set<Usuario> birthdayClients = obtenerCumpleaneros(usuarios, LocalDate.from(reservation.getFechaReserva()));
         if (birthdayClients == null) {
@@ -365,12 +389,15 @@ public class ReservaService {
             ));
         }
 
+
         ReservaEntity reservationNew = new ReservaEntity(
                 reservation.getRutUsuario(),
                 reservation.getRutsUsuarios(),
                 reservation.getFechaReserva(),
                 reservation.getVueltasTiempo(),
                 reservation.getCantPersonas(),
+                duracion,
+                rangoPersonas,
                 null
         );
 

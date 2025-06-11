@@ -91,17 +91,9 @@ public class ReporteService {
         Map<String, Map<String, Double>> result = new LinkedHashMap<>();
         Map<String, Double> totalPerMonth = new TreeMap<>();
 
-        List<String> allLapsCategories = List.of(
-                "10 vueltas o máx. 10 minutos",
-                "15 vueltas o máx. 15 minutos",
-                "20 vueltas o máx. 20 minutos"
-        );
+        Set<String> allLapsCategories = new TreeSet<>(intermediate.keySet());
 
-        for (String category : allLapsCategories) {
-            intermediate.computeIfAbsent(category, k -> new TreeMap<>());
-        }
-
-        for (String row : intermediate.keySet()) {
+        for (String row : allLapsCategories) {
             Map<String, Double> rowData = new LinkedHashMap<>();
             double totalRow = 0;
             for (String month : allMonths) {
@@ -147,12 +139,12 @@ public class ReporteService {
         Map<String, Map<String, Double>> intermediate = new TreeMap<>();
         for (Reserva r : reservations) {
             String monthReservation = r.getFechaReserva().getYear() + "-" + String.format("%02d", r.getFechaReserva().getMonthValue());
-            int numberPeople = r.getCantPersonas();
-            String range;
-            if (numberPeople <= 2) range = "1-2 personas";
-            else if (numberPeople <= 5) range = "3-5 personas";
-            else if (numberPeople <= 10) range = "6-10 personas";
-            else range = "11-15 personas";
+
+            // Se toma el rango guardado en la reserva:
+            String range = r.getRangoPersonas();
+            if (range == null || range.isBlank()) {
+                range = "Sin rango definido";
+            }
 
             double totalReservation = 0;
             try {
@@ -184,18 +176,13 @@ public class ReporteService {
         Map<String, Map<String, Double>> result = new LinkedHashMap<>();
         Map<String, Double> totalPerMonth = new TreeMap<>();
 
-        List<String> allGroupCategories = List.of(
-                "1-2 personas",
-                "3-5 personas",
-                "6-10 personas",
-                "11-15 personas"
-        );
+        Set<String> allGroupCategories = new TreeSet<>(intermediate.keySet());
 
         for (String row : allGroupCategories) {
             Map<String, Double> rowData = new LinkedHashMap<>();
             double totalRow = 0;
             for (String month : allMonths) {
-                double value = intermediate.getOrDefault(row, new TreeMap<>()).getOrDefault(month, 0.0);
+                double value = intermediate.get(row).getOrDefault(month, 0.0);
                 double roundedValue = Math.round(value);
                 rowData.put(getMonth(month), roundedValue);
                 totalPerMonth.put(getMonth(month), totalPerMonth.getOrDefault(getMonth(month), 0.0) + roundedValue);
@@ -230,4 +217,5 @@ public class ReporteService {
 
         return result;
     }
+
 }
