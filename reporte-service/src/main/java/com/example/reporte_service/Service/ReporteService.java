@@ -88,16 +88,25 @@ public class ReporteService {
             current = current.plusMonths(1);
         }
 
+        // Categorías requeridas por el enunciado
+        Set<String> predefinedLapsCategories = Set.of(
+                "10 vueltas o máx. 10 minutos",
+                "15 vueltas o máx. 15 minutos",
+                "20 vueltas o máx. 20 minutos"
+        );
+
+        // Combinar categorías predefinidas con las encontradas en las reservas
+        Set<String> allLapsCategories = new TreeSet<>(predefinedLapsCategories);
+        allLapsCategories.addAll(intermediate.keySet());
+
         Map<String, Map<String, Double>> result = new LinkedHashMap<>();
         Map<String, Double> totalPerMonth = new TreeMap<>();
-
-        Set<String> allLapsCategories = new TreeSet<>(intermediate.keySet());
 
         for (String row : allLapsCategories) {
             Map<String, Double> rowData = new LinkedHashMap<>();
             double totalRow = 0;
             for (String month : allMonths) {
-                double value = intermediate.get(row).getOrDefault(month, 0.0);
+                double value = intermediate.getOrDefault(row, Collections.emptyMap()).getOrDefault(month, 0.0);
                 double roundedValue = Math.round(value);
                 rowData.put(getMonth(month), roundedValue);
                 totalPerMonth.put(getMonth(month), totalPerMonth.getOrDefault(getMonth(month), 0.0) + roundedValue);
@@ -133,6 +142,7 @@ public class ReporteService {
         return result;
     }
 
+
     public Map<String, Map<String, Double>> incomePerPerson(LocalDate fechaInicio, LocalDate fechaFin) {
         List<Reserva> reservations = obtenerReservasEntreFechas(fechaInicio.atStartOfDay(), fechaFin.atTime(23, 59));
 
@@ -140,7 +150,6 @@ public class ReporteService {
         for (Reserva r : reservations) {
             String monthReservation = r.getFechaReserva().getYear() + "-" + String.format("%02d", r.getFechaReserva().getMonthValue());
 
-            // Se toma el rango guardado en la reserva:
             String range = r.getRangoPersonas();
             if (range == null || range.isBlank()) {
                 range = "Sin rango definido";
@@ -173,16 +182,33 @@ public class ReporteService {
             current = current.plusMonths(1);
         }
 
+        // Lista ordenada de categorías predefinidas (según enunciado)
+        List<String> orderedPredefinedRanges = Arrays.asList(
+                "1-2 personas",
+                "3-5 personas",
+                "6-10 personas",
+                "11-15 personas"
+        );
+
+        // Rango encontrados en reservas
+        Set<String> detectedRanges = new TreeSet<>(intermediate.keySet());
+
+        // Crear lista final manteniendo orden predefinido, y agregando extras al final
+        List<String> allGroupCategories = new ArrayList<>(orderedPredefinedRanges);
+        for (String extra : detectedRanges) {
+            if (!orderedPredefinedRanges.contains(extra)) {
+                allGroupCategories.add(extra);
+            }
+        }
+
         Map<String, Map<String, Double>> result = new LinkedHashMap<>();
         Map<String, Double> totalPerMonth = new TreeMap<>();
-
-        Set<String> allGroupCategories = new TreeSet<>(intermediate.keySet());
 
         for (String row : allGroupCategories) {
             Map<String, Double> rowData = new LinkedHashMap<>();
             double totalRow = 0;
             for (String month : allMonths) {
-                double value = intermediate.get(row).getOrDefault(month, 0.0);
+                double value = intermediate.getOrDefault(row, Collections.emptyMap()).getOrDefault(month, 0.0);
                 double roundedValue = Math.round(value);
                 rowData.put(getMonth(month), roundedValue);
                 totalPerMonth.put(getMonth(month), totalPerMonth.getOrDefault(getMonth(month), 0.0) + roundedValue);
@@ -217,5 +243,7 @@ public class ReporteService {
 
         return result;
     }
+
+
 
 }

@@ -312,7 +312,7 @@ public class ReservaService {
 
         for (ReservaEntity r : reservations) {
            LocalDateTime start = r.getFechaReserva();
-            LocalDateTime end = calculateEndTime(start, r.getDuracion());
+            LocalDateTime end = start.plusMinutes(r.getDuracion());
             if (newStart.isBefore(end) && start.isBefore(newEnd)) {
                 throw new IllegalArgumentException("Ya existe una reserva que se solapa en ese horario.");
             }

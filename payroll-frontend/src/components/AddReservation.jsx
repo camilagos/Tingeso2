@@ -120,7 +120,7 @@ const AddReservation = () => {
           label="Número de Personas"
           value={form.cantPersonas}
           onChange={handleChange}
-          inputProps={{ min: 1, max: 15 }}
+          //inputProps={{ min: 1, max: 15 }}
           required
         />
 
